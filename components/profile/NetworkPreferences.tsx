@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNetwork, useAccount, useConfig } from 'wagmi';
+import { useAccount, useConfig, useChainId } from 'wagmi';
 import { motion } from 'framer-motion';
 import { SUPPORTED_CHAINS, switchNetwork } from '../../utils/networkSwitching';
 
@@ -10,7 +10,7 @@ interface NetworkPreference {
 }
 
 export const NetworkPreferences: React.FC = () => {
-    const { chain } = useNetwork();
+    const chainId = useChainId();
     const { isConnected } = useAccount();
     const config = useConfig();
     const [preferences, setPreferences] = useState<NetworkPreference[]>([]);
@@ -37,12 +37,12 @@ export const NetworkPreferences: React.FC = () => {
         }
     }, []);
 
-    const handleSetDefault = async (chainId: number) => {
+    const handleSetDefault = async (newChainId: number) => {
         try {
-            await switchNetwork(chainId);
+            await switchNetwork(newChainId);
             const updatedPrefs = preferences.map(pref => ({
                 ...pref,
-                isDefault: pref.chainId === chainId
+                isDefault: pref.chainId === newChainId
             }));
             setPreferences(updatedPrefs);
             localStorage.setItem('networkPreferences', JSON.stringify(updatedPrefs));

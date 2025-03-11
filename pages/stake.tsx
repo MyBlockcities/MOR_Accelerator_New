@@ -24,30 +24,37 @@ const Stake: NextPage = () => {
 
     useEffect(() => {
         const loadStats = async () => {
-            if (!stakingContract || !isConnected) {
+            if (!stakingContract || !isConnected || !address) {
                 setLoading(false);
                 return;
             }
             
             try {
-                const [
-                    totalStaked,
-                    totalStakers,
-                    averageLockTime,
-                    userStake,
-                    userRewards
-                ] = await Promise.all([
-                    stakingContract.getTotalStaked(),
-                    stakingContract.getTotalStakers(),
-                    stakingContract.getAverageLockTime(),
-                    stakingContract.getStake(address),
-                    stakingContract.getPendingRewards(address)
-                ]);
-
+                // Default pool ID - this should be replaced with actual pool selection logic
+                const defaultPoolId = '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`;
+                
+                // Use the functions that are actually in the ABI
+                let userStake = BigInt(0);
+                let userRewards = BigInt(0);
+                
+                try {
+                    userStake = await stakingContract.read.getStakerAmount([defaultPoolId, address as `0x${string}`]);
+                } catch (error) {
+                    console.log('Error fetching user stake:', error);
+                }
+                
+                try {
+                    userRewards = await stakingContract.read.getPendingRewards([defaultPoolId, address as `0x${string}`]);
+                } catch (error) {
+                    console.log('Error fetching user rewards:', error);
+                }
+                
+                // Since we don't have totalStaked and other global stats in the ABI,
+                // we'll use placeholder values or fetch them differently
                 setStats({
-                    totalStaked: totalStaked.toString(),
-                    totalStakers: totalStakers.toNumber(),
-                    averageLockTime: averageLockTime.toNumber(),
+                    totalStaked: '0', // Placeholder - would need to be calculated from events or other contract calls
+                    totalStakers: 0,  // Placeholder
+                    averageLockTime: 0, // Placeholder
                     yourStake: userStake.toString(),
                     yourRewards: userRewards.toString()
                 });

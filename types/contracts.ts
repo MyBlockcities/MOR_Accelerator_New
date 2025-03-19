@@ -17,9 +17,15 @@ export interface StakingPool {
 export interface PoolData {
   id: `0x${string}`;
   name: string;
-  owner?: Address;
-  token?: Address;
-  maxParticipants?: number;
+  owner: Address;
+  token: Address;
+  maxParticipants: number;
+  minStake?: bigint;
+  maxStake?: bigint;
+  totalStaked?: bigint;
+  rewardRate?: bigint;
+  lockPeriod?: number;
+  isActive?: boolean;
 }
 
 export interface StakingContractMethods {
@@ -27,7 +33,7 @@ export interface StakingContractMethods {
   getPendingRewards: (args: readonly [`0x${string}`, Address], options?: any) => Promise<bigint>;
   isLocked: (args: readonly [`0x${string}`, Address], options?: any) => Promise<boolean>;
   getLockEndTime: (args: readonly [`0x${string}`, Address], options?: any) => Promise<bigint>;
-  getPoolLimits: (poolId: `0x${string}`, options?: any) => Promise<{
+  getPoolLimits: (args: readonly [`0x${string}`], options?: any) => Promise<{
     minStake: bigint;
     maxStake: bigint;
     maxParticipants: number;
@@ -75,4 +81,4 @@ export interface StakingError {
   type: 'validation' | 'transaction' | 'contract';
   message: string;
   details?: unknown;
-} 
+}

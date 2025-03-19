@@ -4,6 +4,13 @@ import Head from 'next/head';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+// Dynamic import of the AnimatedHeader component to avoid server-side rendering issues
+const AnimatedHeader = dynamic(
+  () => import('../components/animation/AnimatedHeader'),
+  { ssr: false }
+);
 
 const Home: NextPage = () => {
   return (
@@ -18,19 +25,15 @@ const Home: NextPage = () => {
         <div className="bg-gradient-glow" />
         
         <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Hero Section */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-16"
-          >
-            <h1 className="text-5xl font-bold text-white mb-6 animate-float">
-              Welcome to <span className="text-gradient">Morpheus Builder</span>
-            </h1>
-            <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-              An open-source accelerator designed to empower Smart Agents within the MorpheusAI ecosystem.
-            </p>
-            <div className="flex justify-center gap-4">
+          {/* Hero Section with Animated 3D Header */}
+          <div className="text-center mb-16">
+            <AnimatedHeader 
+              title="Welcome to Morpheus Builder"
+              subtitle="An open-source accelerator designed to empower Smart Agents within the MorpheusAI ecosystem."
+              height={400}
+              shapeColor="#00FF84"
+            />
+            <div className="flex justify-center gap-4 mt-8">
               <Link href="/builder-pools" className="px-8 py-3 bg-[#00FF84] text-gray-900 rounded-lg font-semibold hover-glow">
                 Start Building
               </Link>
@@ -38,7 +41,7 @@ const Home: NextPage = () => {
                 Stake MOR
               </Link>
             </div>
-          </motion.div>
+          </div>
 
           {/* Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">

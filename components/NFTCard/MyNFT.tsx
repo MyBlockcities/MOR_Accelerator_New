@@ -1,110 +1,79 @@
 import React, { useEffect, useState } from "react";
-import NFTCard from "../NFTCard/NFTCard";
-import { ethers } from "ethers";
-import myTokenAbi from "../../contractAbi/myTokenAbi";
-import myNFTAbi from "../../contractAbi/myNFT";
+import NFTCard from "./NFTCard";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
-import { useSigner } from "wagmi";
-import { useProvider } from "wagmi";
 import { RotatingLines } from "react-loader-spinner";
+import { useAccount } from "wagmi";
+import ClientOnly from "../common/ClientOnly";
 
 function MyNFT() {
-  const { data: signer, isError } = useSigner();
-  const provider = useProvider();
-  const [NFTData, setNFTData] = useState<any>();
-  const NFTCardList = [
+  const { address } = useAccount();
+  const [NFTData, setNFTData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
+  
+  // Fix hydration issues - only render on client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+  // Mock NFT data for display (subset of all NFTs - these would be owned by the user)
+  const mockNFTData = [
     {
-      title: "Orthogon#720",
-      price: "0.668",
-      likes: "028",
-      image: "/design2.webp",
-      tokenId: 5,
-    },
-    {
-      title: "Orthogon#710",
-      price: "0.668",
-      likes: "253",
-      image: "/design1.webp",
-      tokenId: 6,
-    },
-    {
-      title: "Orthogon#750",
-      price: "0.668",
+      title: "Decentralized Autonomous Initiatives",
+      price: "1.668",
       likes: "120",
       image: "/design3.webp",
       tokenId: 7,
     },
     {
-      title: "Orthogon#770",
-      price: "0.668",
-      likes: "207",
-      image: "/design4.webp",
-      tokenId: 8,
-    },
-    {
-      title: "Orthogon#770",
-      price: "0.668",
-      likes: "207",
+      title: "Morpheus Builder Collection",
+      price: "2.45",
+      likes: "187",
       image: "/design7.jpg",
       tokenId: 9,
     },
     {
-      title: "Orthogon#770",
-      price: "0.668",
-      likes: "207",
+      title: "Web3 Infrastructure Tools",
+      price: "3.12", 
+      likes: "145",
       image: "/design8.webp",
       tokenId: 10,
-    },
-    {
-      title: "Orthogon#770",
-      price: "0.668",
-      likes: "207",
-      image: "/design10.jpg",
-      tokenId: 11,
-    },
+    }
   ];
-  const getMyAllNFT = async () => {
-    try {
-      console.log(window.ethereum);
 
-      let marketplaceContract = new ethers.Contract(
-        process.env.NEXT_PUBLIC_MYNFT_ADDRESS || "",
-        myNFTAbi,
-        signer || provider
-      );
-      let tokenContract = new ethers.Contract(
-        process.env.NEXT_PUBLIC_MYTOKEN_ADDRESS || "",
-        myTokenAbi,
-        signer || provider
-      );
-      const data = await marketplaceContract.getMyNFT();
-      let newItems: any = await Promise.all(
-        data.map(async (d: any) => {
-          console.log(d);
-          const tokenUri = await tokenContract.tokenURI(d._tokenId);
-          console.log(tokenUri);
-          const meta = await axios.get(tokenUri);
-          const price = ethers.utils.formatUnits(d.price.toString(), "ether");
-          const imageUrl = `https://ipfs.io/ipfs/${meta.data.image.substr(7)}`;
-          return {
-            price,
-            tokenId: d._tokenId.toNumber(),
-            seller: d.seller,
-            owner: d.owner,
-            image: imageUrl,
-            title: meta.data.name,
-            desc: meta.data.description,
-          };
-          // const tokenUri = await contract.tokenURI(d.tokenId);
-        })
-      );
-      setNFTData(newItems);
-      console.log(newItems);
+  const getMyNFTs = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      
+      // Check if wallet is connected
+      if (!address) {
+        toast.info(
+          "Please connect your wallet to view your NFTs",
+          {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          }
+        );
+        setNFTData([]);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Use mock data instead of contract calls
+      setNFTData(mockNFTData);
+      setIsLoading(false);
     } catch (error) {
       toast.error(
-        "Something to wrong so please check your wallet are connected",
+        "Something went wrong. Please try again later.",
         {
           position: "top-right",
           autoClose: 3000,
@@ -115,35 +84,64 @@ function MyNFT() {
           progress: undefined,
         }
       );
+      setIsLoading(false);
     }
   };
+
   useEffect(() => {
-    getMyAllNFT();
-  }, []);
+    if (isClient) {
+      getMyNFTs();
+    }
+  }, [isClient, address]); // Re-run when address changes
+
+  if (!isClient) {
+    return null;
+  }
+
   return (
-    <div className="">
-      <span className="text-white text-3xl font-bold">Our Product</span>
-      <div>
-        <div className={`grid ${NFTData ? "grid-cols-1 md:grid-cols-3" : ""} gap-3 md:gap-9 mt-8`}>
-        {NFTData ? (
-            NFTData.map((NFTCardData: any) => {
-              return <NFTCard key={NFTCardData.tokenId} {...NFTCardData} />;
-            })
-          ) : (
-            <span className="flex justify-center my-auto">
-              {" "}
-              <RotatingLines
-                strokeColor="grey"
-                strokeWidth="5"
-                animationDuration="0.75"
-                width="96"
-                visible={true}
-              />
-            </span>
-          )}
-        </div>
+    <ClientOnly fallback={
+      <div className="flex justify-center items-center h-[300px]">
+        <RotatingLines
+          strokeColor="grey"
+          strokeWidth="5"
+          animationDuration="0.75"
+          width="96"
+          visible={true}
+        />
       </div>
-    </div>
+    }>
+      <div className="">
+        <ToastContainer theme="dark" />
+        <span className="text-white text-3xl font-bold">My Collection</span>
+        
+        {!address ? (
+          <div className="mt-8 p-6 bg-[#242435] rounded-lg text-center">
+            <p className="text-white text-lg">Connect your wallet to view your NFTs</p>
+          </div>
+        ) : isLoading ? (
+          <div className="flex justify-center items-center h-[400px]">
+            <RotatingLines
+              strokeColor="grey"
+              strokeWidth="5"
+              animationDuration="0.75"
+              width="96"
+              visible={true}
+            />
+          </div>
+        ) : NFTData && NFTData.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+            {NFTData.map((NFTCardData: any) => (
+              <NFTCard key={NFTCardData.tokenId} {...NFTCardData} />
+            ))}
+          </div>
+        ) : (
+          <div className="mt-8 p-6 bg-[#242435] rounded-lg text-center">
+            <p className="text-white text-lg">You don't own any NFTs yet</p>
+            <p className="text-[#acacac] mt-2">Explore the marketplace to find NFTs to purchase</p>
+          </div>
+        )}
+      </div>
+    </ClientOnly>
   );
 }
 

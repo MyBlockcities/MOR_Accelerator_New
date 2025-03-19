@@ -1,47 +1,79 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { ethers } from "ethers";
 import { useRouter } from "next/router";
-import axios from "axios";
-import blogAbi from "../../contractAbi/blogAbi";
 import { RotatingLines } from "react-loader-spinner";
-import { useSigner } from "wagmi";
-import { useProvider } from "wagmi";
+import ClientOnly from "../common/ClientOnly";
+
+// Mock blog data 
+const MOCK_BLOGS = {
+  "1": {
+    title: "The Future of Decentralized Builder Ecosystems",
+    desc: "Exploring how Morpheus Builder is creating new opportunities for developers and stakeholders in Web3 through innovative staking and reward mechanisms.",
+    image: "/design7.jpg",
+    category: "Web3",
+    date: "March 18, 2025"
+  },
+  "2": {
+    title: "Understanding Builder Pools and Collaborative Staking",
+    desc: "A deep dive into how builder pools work in the Morpheus ecosystem, allowing builders to combine resources and share rewards proportionally to their contributions.",
+    image: "/design3.webp",
+    category: "Staking",
+    date: "March 15, 2025"
+  }
+};
 
 function BlogDetail() {
   const router = useRouter();
   const { blogId } = router.query;
-  const [blogData, setBlogData] = useState<any>("");
+  const [blogData, setBlogData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { data: signer, isError } = useSigner();
-  const provider = useProvider();
+  const [isClient, setIsClient] = useState(false);
+  
+  // Fix hydration issues - only render on client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const getBlogData = async () => {
     setIsLoading(true);
-    const blogContract = new ethers.Contract(
-      process.env.NEXT_PUBLIC_BLOG_ADDRESS || "",
-      blogAbi,
-      signer || provider
-    );
-    const blogData = await blogContract.getBlogById(blogId);
-    const meta = await axios.get(blogData._blogUrl);
-    const imageUrl = `https://ipfs.io/ipfs/${meta.data.image.substr(7)}`;
-    const data = {
-      title: blogData._title,
-      desc: meta.data.description,
-      image: imageUrl,
-      category: blogData._category,
-      blogId: blogData._blogId.toNumber(),
-    };
-    setBlogData(data);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Use mock data
+    const id = typeof blogId === 'string' ? blogId : "1";
+    const data = MOCK_BLOGS[id as keyof typeof MOCK_BLOGS] || MOCK_BLOGS["1"];
+    
+    setBlogData({
+      ...data,
+      blogId: id
+    });
+    
     setIsLoading(false);
   };
+  
   useEffect(() => {
-    if (blogId) {
+    if (blogId && isClient) {
       getBlogData();
     }
-  }, [blogId]);
+  }, [blogId, isClient]);
+
+  if (!isClient) {
+    return null;
+  }
+
   return (
-    <div>
+    <ClientOnly fallback={
+      <div className="flex justify-center my-auto h-screen items-center">
+        <RotatingLines
+          strokeColor="grey"
+          strokeWidth="5"
+          animationDuration="0.75"
+          width="96"
+          visible={true}
+        />
+      </div>
+    }>
       {blogData ? (
         <div className="">
           <span className="text-white text-3xl font-bold">Blog Details</span>
@@ -49,29 +81,36 @@ function BlogDetail() {
             <p className="text-white text-3xl font-extrabold">
               {blogData.title}
             </p>
-            <time className="text-[#acacac]">10 may, 2021</time>
-            <Image
-              src={blogData.image}
-              alt="design_7"
-              height={400}
-              width={400}
-            />
+            <time className="text-[#acacac]">{blogData.date}</time>
+            <div className="relative w-full h-[400px]">
+              <Image
+                src={blogData.image}
+                alt={blogData.title}
+                fill
+                objectFit="cover"
+                className="rounded-lg"
+              />
+            </div>
             <p className="text-[#acacac]">{blogData.desc}</p>
+            <div className="mt-4">
+              <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
+                {blogData.category}
+              </span>
+            </div>
           </div>
         </div>
       ) : (
-        <span className="flex justify-center my-auto">
-          {" "}
+        <div className="flex justify-center my-auto h-[400px] items-center">
           <RotatingLines
             strokeColor="grey"
             strokeWidth="5"
             animationDuration="0.75"
             width="96"
             visible={true}
-          />{" "}
-        </span>
+          />
+        </div>
       )}
-    </div>
+    </ClientOnly>
   );
 }
 

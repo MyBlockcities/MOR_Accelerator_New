@@ -4,15 +4,39 @@ import Head from 'next/head';
 import { motion } from 'framer-motion';
 import { useAccount } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { toast } from 'react-hot-toast';
+import ClientOnly from '../../components/common/ClientOnly';
+import { useMORToken } from '../../hooks/useMORToken';
+import { useBuilderPool } from '../../hooks/useBuilderPool';
 
 const BuilderPools: NextPage = () => {
-    const { isConnected } = useAccount();
-    const [isLoading, setIsLoading] = useState(true);
-
+    const { isConnected, address } = useAccount();
+    const { approve, loading: tokenLoading } = useMORToken();
+    const [isLoading, setIsLoading] = useState(false);
+    
+    // Form state
+    const [poolName, setPoolName] = useState('');
+    const [poolDescription, setPoolDescription] = useState('');
+    const [minStake, setMinStake] = useState('1000');
+    
+    // Pool data
+    const [activePools, setActivePools] = useState<any[]>([]);
+    
+    // Only load data client-side
+    const [isClient, setIsClient] = useState(false);
+    
     useEffect(() => {
-        // Simulate loading state
-        const timer = setTimeout(() => setIsLoading(false), 1000);
-        return () => clearTimeout(timer);
+        setIsClient(true);
+        // Mock data for demonstration purposes
+        setActivePools([
+            {
+                id: '1',
+                name: 'AI Agents Pool',
+                description: 'Collaborative pool for AI agent developers',
+                minStake: '1000',
+                members: 4
+            }
+        ]);
     }, []);
 
     return (
@@ -61,7 +85,11 @@ const BuilderPools: NextPage = () => {
                                 className="glassmorphism p-8 rounded-xl"
                             >
                                 <h2 className="text-2xl font-semibold text-white mb-6">Create New Pool</h2>
-                                <form className="space-y-6">
+                                <ClientOnly fallback={<div className="text-gray-300">Loading form...</div>}>
+                                    <form className="space-y-6" onSubmit={(e) => {
+                                        e.preventDefault();
+                                        toast.success('Creating pool feature coming soon!');
+                                    }}>
                                     <div>
                                         <label htmlFor="poolName" className="block text-sm font-medium text-gray-300">
                                             Pool Name
@@ -71,6 +99,8 @@ const BuilderPools: NextPage = () => {
                                             id="poolName"
                                             className="mt-1 block w-full rounded-lg bg-dark-surface border-dark-surface focus:border-[#00FF84] focus:ring-[#00FF84] text-white"
                                             placeholder="Enter pool name"
+                                            value={poolName}
+                                            onChange={(e) => setPoolName(e.target.value)}
                                         />
                                     </div>
 
@@ -83,6 +113,8 @@ const BuilderPools: NextPage = () => {
                                             rows={4}
                                             className="mt-1 block w-full rounded-lg bg-dark-surface border-dark-surface focus:border-[#00FF84] focus:ring-[#00FF84] text-white"
                                             placeholder="Describe your builder pool"
+                                            value={poolDescription}
+                                            onChange={(e) => setPoolDescription(e.target.value)}
                                         />
                                     </div>
 
@@ -95,16 +127,20 @@ const BuilderPools: NextPage = () => {
                                             id="minStake"
                                             className="mt-1 block w-full rounded-lg bg-dark-surface border-dark-surface focus:border-[#00FF84] focus:ring-[#00FF84] text-white"
                                             placeholder="Enter minimum stake amount"
+                                            value={minStake}
+                                            onChange={(e) => setMinStake(e.target.value)}
                                         />
                                     </div>
 
                                     <button
                                         type="submit"
                                         className="w-full px-8 py-3 bg-[#00FF84] text-gray-900 rounded-lg font-semibold hover-glow transition-all"
+                                        disabled={isLoading || tokenLoading}
                                     >
                                         Create Pool
                                     </button>
-                                </form>
+                                    </form>
+                                </ClientOnly>
                             </motion.div>
 
                             <motion.div
@@ -114,18 +150,31 @@ const BuilderPools: NextPage = () => {
                                 className="glassmorphism p-8 rounded-xl"
                             >
                                 <h2 className="text-2xl font-semibold text-white mb-6">Active Pools</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {/* Sample pool cards - replace with actual data */}
-                                    <div className="glassmorphism p-6 rounded-lg hover-glow transition-all cursor-pointer">
-                                        <h3 className="text-xl font-semibold text-white mb-2">AI Agents Pool</h3>
-                                        <p className="text-gray-300 mb-4">Collaborative pool for AI agent developers</p>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-sm text-gray-400">Min Stake: 1000 MOR</span>
-                                            <span className="text-sm text-[#00FF84]">4 Members</span>
+                                <ClientOnly fallback={<div className="text-gray-300">Loading pools...</div>}>
+                                    {isClient && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            {activePools.length > 0 ? (
+                                                activePools.map((pool) => (
+                                                    <div 
+                                                        key={pool.id}
+                                                        className="glassmorphism p-6 rounded-lg hover-glow transition-all cursor-pointer"
+                                                    >
+                                                        <h3 className="text-xl font-semibold text-white mb-2">{pool.name}</h3>
+                                                        <p className="text-gray-300 mb-4">{pool.description}</p>
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="text-sm text-gray-400">Min Stake: {pool.minStake} MOR</span>
+                                                            <span className="text-sm text-[#00FF84]">{pool.members} Members</span>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="col-span-full text-center py-4">
+                                                    <p className="text-gray-300">No active pools found. Create the first one!</p>
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
-                                    {/* Add more pool cards as needed */}
-                                </div>
+                                    )}
+                                </ClientOnly>
                             </motion.div>
                         </div>
                     )}
@@ -135,4 +184,4 @@ const BuilderPools: NextPage = () => {
     );
 };
 
-export default BuilderPools; 
+export default BuilderPools;

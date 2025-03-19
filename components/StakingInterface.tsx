@@ -7,8 +7,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useBuilderPool } from '../hooks/useBuilderPool';
 import { useStakingContract } from '../hooks/useStakingContract';
+import { useMORToken } from '../hooks/useMORToken';
 import { handleContractError } from '../utils/contractErrors';
 import { toast } from 'react-hot-toast';
+import ClientOnly from './common/ClientOnly';
 import { GasEstimator } from './staking/GasEstimator';
 import { LockPeriodSelector } from './staking/LockPeriodSelector';
 import { SUPPORTED_CHAINS } from '../utils/networkSwitching';
@@ -41,9 +43,12 @@ export function StakingInterface() {
     const chainId = useChainId();
     const { address, isConnected } = useAccount();
     const publicClient = usePublicClient();
+    const { approve, allowance, formattedAllowance, loading: tokenLoading } = useMORToken();
     const [selectedPool, setSelectedPool] = useState<`0x${string}` | null>(null);
     const [stats, setStats] = useState<StakingStats | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [needsApproval, setNeedsApproval] = useState(false);
+    const [approving, setApproving] = useState(false);
     const [availablePools, setAvailablePools] = useState<StakingPool[]>([]);
     const [selectedLockPeriod, setSelectedLockPeriod] = useState(30);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -79,10 +84,11 @@ export function StakingInterface() {
                 setIsLoading(true);
                 const pools = await getPools();
                 // Map the pool data to include required fields
+                // Use the poolData type and extend with required fields
                 const mappedPools = pools.map(pool => ({
                     ...pool,
-                    owner: pool.owner || '0x0000000000000000000000000000000000000000',
-                    token: pool.token || '0x0000000000000000000000000000000000000000',
+                    owner: pool.owner || ('0x0000000000000000000000000000000000000000' as Address),
+                    token: pool.token || ('0x0000000000000000000000000000000000000000' as Address),
                     maxParticipants: pool.maxParticipants || 0,
                     rewardRate: BigInt(0),
                     lockPeriod: 0,
@@ -116,11 +122,11 @@ export function StakingInterface() {
             clearErrors();
 
             const [stakedAmount, locked, lockEnd, rewards, limits] = await Promise.all([
-                stakingContract.contract.read.getStakerAmount([selectedPool, address]),
-                stakingContract.contract.read.isLocked([selectedPool, address]),
-                stakingContract.contract.read.getLockEndTime([selectedPool, address]),
-                stakingContract.contract.read.getPendingRewards([selectedPool, address]),
-                stakingContract.contract.read.getPoolLimits(selectedPool)
+                stakingContract.contract.read.getStakerAmount([selectedPool, address as Address]),
+                stakingContract.contract.read.isLocked([selectedPool, address as Address]),
+                stakingContract.contract.read.getLockEndTime([selectedPool, address as Address]),
+                stakingContract.contract.read.getPendingRewards([selectedPool, address as Address]),
+                stakingContract.contract.read.getPoolLimits([selectedPool])
             ]);
 
             setStats({
@@ -200,9 +206,48 @@ export function StakingInterface() {
         }
     }, [selectedPool, loadStats]);
 
+    // Check if token approval is needed
+    useEffect(() => {
+        if (!selectedPool || !address || !watchAmount || !allowance) return;
+        
+        try {
+            const amount = parseEther(watchAmount || '0');
+            if (BigInt(allowance) < amount) {
+                setNeedsApproval(true);
+            } else {
+                setNeedsApproval(false);
+            }
+        } catch (error) {
+            console.error('Error checking allowance:', error);
+        }
+    }, [selectedPool, address, watchAmount, allowance]);
+    
+    // Handle token approval
+    const handleApprove = async () => {
+        if (!selectedPool || !stakingContract?.contract || !watchAmount) return;
+        
+        setApproving(true);
+        try {
+            await approve(stakingContract.contract.address as Address, watchAmount);
+            toast.success('Token approval successful');
+            setNeedsApproval(false);
+        } catch (error) {
+            console.error('Error approving tokens:', error);
+            toast.error('Failed to approve tokens');
+        } finally {
+            setApproving(false);
+        }
+    };
+
     // Enhanced form submission with proper error handling
     const onSubmit = useCallback(async (data: StakingFormData) => {
         if (!address || !publicClient || !stats || !stakingContract?.contract) return;
+        
+        // Check approval first
+        if (needsApproval) {
+            toast.error('Please approve token spending first');
+            return;
+        }
         
         setIsSubmitting(true);
         setError(null);
@@ -300,12 +345,13 @@ export function StakingInterface() {
     }
 
     return (
-        <div className="space-y-6">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
-            >
+        <ClientOnly fallback={<div className="text-center py-6">Loading staking interface...</div>}>
+            <div className="space-y-6">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
+                >
                 <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
                     Stake MOR Tokens
                 </h2>
@@ -380,13 +426,36 @@ export function StakingInterface() {
                         disabled={isSubmitting}
                     />
 
+                    {/* Token Approval Section */}
+                    {needsApproval && watchAmount && watchPoolId && (
+                        <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border border-yellow-200 dark:border-yellow-800">
+                            <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Token Approval Required</h3>
+                            <p className="mt-1 text-xs text-yellow-700 dark:text-yellow-300">
+                                You need to approve the staking contract to use your MOR tokens
+                            </p>
+                            <button
+                                type="button"
+                                onClick={handleApprove}
+                                disabled={approving}
+                                className="mt-2 px-3 py-1.5 text-xs font-medium text-white bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-700 dark:hover:bg-yellow-600 rounded-md"
+                            >
+                                {approving ? 'Approving...' : 'Approve MOR Tokens'}
+                            </button>
+                            {formattedAllowance && (
+                                <p className="mt-1 text-xs text-yellow-700 dark:text-yellow-300">
+                                    Current allowance: {formattedAllowance} MOR
+                                </p>
+                            )}
+                        </div>
+                    )}
+                    
                     {/* Gas Estimation */}
-                    {watchAmount && watchPoolId && stakingContract?.contract && (
+                    {watchAmount && watchPoolId && stakingContract?.contract && !needsApproval && (
                         <div className="mt-4">
-                            <GasEstimator
-                                contractFunction={stakingContract.contract.write.stake}
-                                args={[watchPoolId as `0x${string}`, parseEther(watchAmount)]}
-                            />
+                                <GasEstimator
+                                    contractFunction={stakingContract.contract.estimateGas?.stake as any}
+                                    args={[watchPoolId as `0x${string}`, parseEther(watchAmount)]}
+                                />
                         </div>
                     )}
 
@@ -398,17 +467,21 @@ export function StakingInterface() {
 
                     <button
                         type="submit"
-                        disabled={isLoading || !watchAmount || !watchPoolId || Object.keys(errors).length > 0 || isSubmitting}
+                        disabled={isLoading || !watchAmount || !watchPoolId || Object.keys(errors).length > 0 || isSubmitting || needsApproval || approving || tokenLoading}
                         className={`w-full px-4 py-2 text-sm font-medium text-white rounded-md 
-                            ${isLoading || !watchAmount || !watchPoolId || Object.keys(errors).length > 0 || isSubmitting
+                            ${isLoading || !watchAmount || !watchPoolId || Object.keys(errors).length > 0 || isSubmitting || needsApproval || approving || tokenLoading
                                 ? 'bg-gray-400 cursor-not-allowed'
                                 : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
                             }`}
                     >
-                        {isLoading ? 'Processing...' : isSubmitting ? 'Staking...' : 'Stake'}
+                        {isLoading ? 'Processing...' : 
+                         isSubmitting ? 'Staking...' : 
+                         needsApproval ? 'Approval Required' : 
+                         'Stake'}
                     </button>
                 </form>
             </motion.div>
         </div>
+        </ClientOnly>
     );
 }

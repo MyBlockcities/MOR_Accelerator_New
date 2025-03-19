@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAccount, useConfig, useChainId } from 'wagmi';
 import { motion } from 'framer-motion';
 import { SUPPORTED_CHAINS, switchNetwork } from '../../utils/networkSwitching';
+import ClientOnly from '../common/ClientOnly';
 
 interface NetworkPreference {
     chainId: number;
@@ -52,11 +53,11 @@ export const NetworkPreferences: React.FC = () => {
         }
     };
 
-    const handleCustomRpcSave = (chainId: number) => {
+    const handleCustomRpcSave = (prefChainId: number) => {
         if (!customRpc) return;
 
         const updatedPrefs = preferences.map(pref => 
-            pref.chainId === chainId 
+            pref.chainId === prefChainId 
                 ? { ...pref, customRpc } 
                 : pref
         );
@@ -76,11 +77,16 @@ export const NetworkPreferences: React.FC = () => {
     }
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-        >
+        <ClientOnly fallback={
+            <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <p>Loading network preferences...</p>
+            </div>
+        }>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+            >
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                     Network Preferences
@@ -133,7 +139,7 @@ export const NetworkPreferences: React.FC = () => {
                                         <input
                                             type="text"
                                             placeholder={networkConfig.rpcUrls.default.http[0]}
-                                            value={pref.chainId === chain?.id ? customRpc : pref.customRpc || ''}
+                                            value={pref.chainId === chainId ? customRpc : (pref.customRpc || '')}
                                             onChange={(e) => setCustomRpc(e.target.value)}
                                             className="flex-1 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500"
                                         />
@@ -150,6 +156,7 @@ export const NetworkPreferences: React.FC = () => {
                     })}
                 </div>
             </div>
-        </motion.div>
+            </motion.div>
+        </ClientOnly>
     );
-}; 
+};

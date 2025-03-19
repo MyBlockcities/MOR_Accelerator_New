@@ -6,7 +6,10 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { StakingInterface } from '../components/StakingInterface';
 import { LoadingState } from '../components/common/LoadingState';
 import { useStakingContract } from '../hooks/useStakingContract';
+import { useMORToken } from '../hooks/useMORToken';
 import { useEffect, useState } from 'react';
+import ClientOnly from '../components/common/ClientOnly';
+import { formatEther } from 'viem';
 
 interface StakingStats {
     totalStaked: string;
@@ -19,8 +22,15 @@ interface StakingStats {
 const Stake: NextPage = () => {
     const { address, isConnected } = useAccount();
     const { contract: stakingContract, isLoading: contractLoading } = useStakingContract(42161); // Default to Arbitrum
+    const { balance, formattedBalance, loading: tokenLoading } = useMORToken();
     const [stats, setStats] = useState<StakingStats | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isClient, setIsClient] = useState(false);
+    
+    // Fix hydration issues - only render on client
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     useEffect(() => {
         const loadStats = async () => {
@@ -68,7 +78,7 @@ const Stake: NextPage = () => {
         loadStats();
     }, [stakingContract, isConnected, address]);
 
-    if (contractLoading || loading) {
+    if (!isClient || contractLoading || loading || tokenLoading) {
         return (
             <div className="relative min-h-screen bg-dark-bg bg-grid-pattern">
                 <div className="bg-gradient-glow" />
@@ -103,13 +113,14 @@ const Stake: NextPage = () => {
                         </p>
                     </motion.div>
 
-                    {stats && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
-                        >
+                    <ClientOnly fallback={<div className="text-center py-6">Loading staking information...</div>}>
+                        {stats && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+                            >
                             <div className="glassmorphism p-6 rounded-xl">
                                 <h3 className="text-sm font-medium text-gray-300">Total Staked</h3>
                                 <p className="mt-2 text-3xl font-semibold text-white">{stats.totalStaked} <span className="text-[#00FF84]">MOR</span></p>
@@ -127,35 +138,56 @@ const Stake: NextPage = () => {
                                 <p className="mt-2 text-3xl font-semibold text-white">{stats.yourStake} <span className="text-[#00FF84]">MOR</span></p>
                                 <p className="mt-2 text-sm text-gray-300">Pending Rewards: <span className="text-[#00FF84]">{stats.yourRewards} MOR</span></p>
                             </div>
-                        </motion.div>
-                    )}
+                            </motion.div>
+                        )}
+                        
+                        {/* MOR Token Balance Card */}
+                        {isConnected && formattedBalance && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 }}
+                                className="glassmorphism p-6 rounded-xl mb-8"
+                            >
+                                <h3 className="text-xl font-medium text-gray-300">Your MOR Balance</h3>
+                                <p className="mt-2 text-3xl font-semibold text-white">
+                                    {formattedBalance} <span className="text-[#00FF84]">MOR</span>
+                                </p>
+                                <p className="mt-2 text-sm text-gray-400">
+                                    Available for staking in builder pools
+                                </p>
+                            </motion.div>
+                        )}
+                    </ClientOnly>
 
-                    {!isConnected ? (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4 }}
-                            className="glassmorphism p-8 rounded-xl text-center max-w-2xl mx-auto"
-                        >
-                            <h2 className="text-2xl font-semibold text-white mb-6">Connect Your Wallet</h2>
-                            <p className="text-gray-300 mb-8">
-                                Connect your wallet to start staking and earning rewards
-                            </p>
-                            <ConnectButton />
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4 }}
-                        >
-                            <StakingInterface />
-                        </motion.div>
-                    )}
+                    <ClientOnly fallback={<div className="text-center py-6">Loading wallet connection...</div>}>
+                        {!isConnected ? (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4 }}
+                                className="glassmorphism p-8 rounded-xl text-center max-w-2xl mx-auto"
+                            >
+                                <h2 className="text-2xl font-semibold text-white mb-6">Connect Your Wallet</h2>
+                                <p className="text-gray-300 mb-8">
+                                    Connect your wallet to start staking and earning rewards
+                                </p>
+                                <ConnectButton />
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4 }}
+                            >
+                                <StakingInterface />
+                            </motion.div>
+                        )}
+                    </ClientOnly>
                 </main>
             </div>
         </>
     );
 };
 
-export default Stake; 
+export default Stake;

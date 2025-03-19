@@ -1,9 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "npm install --legacy-peer-deps && npm run build",
-  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "yarn install && yarn build",
+  "installCommand": "yarn install",
   "framework": "nextjs",
   "env": {
     "NEXT_PUBLIC_ENVIRONMENT": "production"
+  },
+  "github": {
+    "silent": true
   }
-} 
+}

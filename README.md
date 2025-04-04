@@ -80,29 +80,41 @@ yarn dev
 
 Visit http://localhost:3000 to view the application.
 
-Recent Updates:
-Implemented the Staking Mechanism with MOR tokens:
-Created a Power Factor Calculator for time-based staking rewards
-Integrated with Builder Smart Contract on Arbitrum and Base networks
-Added minimum staking threshold requirement
-Updated Reward Distribution:
-50% to stakers
-20% to Maintainer Wallet
-5% to Mentor Wallets
-25% to Operations Multisig
-Implemented Liquidity Rules:
-Maintainer Wallet: 50% must be staked, 50% remains liquid
-Mentor Wallets: 100% liquid for direct distribution
-Operations Multisig: Budget management for expenses
-Added Time & Dilution-Based Power Factor Method:
-Power factor scale from 1.0x to 3.0x based on staking duration
-Boosts applied to user deposits based on time staked
-Calculation method: MOR Rewards = MOR Staked × Power Factor
-Created New UI Components:
-StakingForm for staking MOR tokens
-StakingDashboard for viewing staking information
-PowerFactorInfo for explaining the power factor method
-RewardDistributionDashboard for visualizing reward distribution
+## Recent Updates
+
+### Enhanced Staking Mechanism
+- **Power Factor System**: Implemented time-based staking rewards with a Power Factor Calculator
+- **Smart Contract Integration**: Direct integration with Builder Smart Contracts on Arbitrum and Base
+- **Staking Thresholds**: Added minimum staking threshold requirements for participation
+
+### Reward Distribution System
+- **Distribution Model**:
+  - 50% to stakers
+  - 20% to Maintainer Wallet
+  - 5% to Mentor Wallets
+  - 25% to Operations Multisig
+- **Liquidity Rules**:
+  - Maintainer Wallet: 50% must be staked, 50% remains liquid
+  - Mentor Wallets: 100% liquid for direct distribution
+  - Operations Multisig: Budget management for expenses
+
+### Power Factor Calculation
+- **Dynamic Scaling**: Power factor scale from 1.0x to 3.0x based on staking duration
+- **Reward Boosts**: Time-based multipliers applied to user deposits
+- **Formula**: MOR Rewards = MOR Staked × Power Factor
+
+### New UI Components
+- **Staking Interface**:
+  - `StakingForm`: For MOR token staking operations
+  - `StakingDashboard`: Centralized view of all staking information
+  - `PowerFactorInfo`: Educational component explaining power factor mechanics
+  - `RewardDistributionDashboard`: Visual representation of reward distribution
+  - `AnimatedStakingFlow`: Interactive staking process visualization
+  - `RewardVisualizationDashboard`: Real-time reward tracking and projections
+
+### Staking Pages
+- `/staking`: Core staking interface with essential functionality
+- `/enhanced-staking`: Advanced staking features with detailed analytics and visualization tools
 
 ## Known Issues and Fixes
 
@@ -217,6 +229,9 @@ We've added a postinstall script that automatically creates the missing files. I
 - [viem](https://viem.sh/) - TypeScript Interface for Ethereum
 - [TailwindCSS](https://tailwindcss.com/) - Utility-first CSS framework
 - [Hardhat](https://hardhat.org/) - Ethereum development environment
+- [Socket.io](https://socket.io/) - Real-time event-based communication
+- [ox](https://www.npmjs.com/package/ox) - Wallet connection utilities (requires BIP39 wordlist fix)
+- [@scure/bip39](https://www.npmjs.com/package/@scure/bip39) - Implementation of BIP39 standard
 
 ## Deployment
 

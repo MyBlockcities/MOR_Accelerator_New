@@ -13,7 +13,8 @@
     "deploy": "hardhat run scripts/deploy.ts",
     "deploy:feature-market": "hardhat run scripts/deploy_feature_sponsorship.ts",
     "test:feature-market": "hardhat test test/FeatureSponsorshipMarket.test.ts",
-    "generate-types": "typechain --target=ethers-v6 'artifacts/contracts/**/*.json'"
+    "generate-types": "typechain --target=ethers-v6 'artifacts/contracts/**/*.json'",
+    "postinstall": "node scripts/fix-bip39-wordlists.js"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.1.1",

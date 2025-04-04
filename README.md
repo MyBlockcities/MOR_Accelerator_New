@@ -80,6 +80,47 @@ yarn dev
 
 Visit http://localhost:3000 to view the application.
 
+Recent Updates:
+Implemented the Staking Mechanism with MOR tokens:
+Created a Power Factor Calculator for time-based staking rewards
+Integrated with Builder Smart Contract on Arbitrum and Base networks
+Added minimum staking threshold requirement
+Updated Reward Distribution:
+50% to stakers
+20% to Maintainer Wallet
+5% to Mentor Wallets
+25% to Operations Multisig
+Implemented Liquidity Rules:
+Maintainer Wallet: 50% must be staked, 50% remains liquid
+Mentor Wallets: 100% liquid for direct distribution
+Operations Multisig: Budget management for expenses
+Added Time & Dilution-Based Power Factor Method:
+Power factor scale from 1.0x to 3.0x based on staking duration
+Boosts applied to user deposits based on time staked
+Calculation method: MOR Rewards = MOR Staked × Power Factor
+Created New UI Components:
+StakingForm for staking MOR tokens
+StakingDashboard for viewing staking information
+PowerFactorInfo for explaining the power factor method
+RewardDistributionDashboard for visualizing reward distribution
+
+## Known Issues and Fixes
+
+### BIP39 Wordlist ESM Import Issue
+
+This project uses the `ox` package which imports wordlists from `@scure/bip39` without the `.js` extension, causing ESM import errors. The error looks like:
+
+```
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/path/to/node_modules/@scure/bip39/wordlists/czech' imported from /path/to/node_modules/ox/_esm/core/internal/mnemonic/wordlists.js
+Did you mean to import "@scure/bip39/wordlists/czech.js"?
+```
+
+We've added a postinstall script that automatically creates the missing files. If you encounter this issue:
+
+1. The script should run automatically after `npm install` or `yarn install`
+2. If the error persists, run `node scripts/fix-bip39-wordlists.js` manually
+3. Restart your development server
+
 ## Available Scripts
 
 - `yarn dev` - Start development server

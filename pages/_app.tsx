@@ -38,12 +38,20 @@ function MyApp({ Component, pageProps }: AppProps) {
     setMounted(true);
   }, []);
 
+  // Correct metadata for RainbowKitProvider
+  const metadata = {
+    name: 'Morpheus Builder',
+    description: 'Morpheus Builder Open Source Accelerator',
+    url: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000', // Dynamically set URL
+    icons: ['/logo-color.png'],
+  };
+
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           {mounted ? (
-            <RainbowKitProvider>
+            <RainbowKitProvider appInfo={metadata}>
               <Layout>
                 <Component {...pageProps} />
               </Layout>

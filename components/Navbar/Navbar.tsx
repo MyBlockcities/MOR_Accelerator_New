@@ -42,7 +42,9 @@ export default function Navbar() {
                   alt="Morpheus Logo" 
                   width={120} 
                   height={30}
+                  style={{ width: 'auto' }}
                   className="cursor-pointer"
+                  priority
                 />
               </Link>
             </div>

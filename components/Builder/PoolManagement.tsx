@@ -117,9 +117,11 @@ export default function PoolManagement() {
 
   // Only render after client-side mount to prevent hydration errors
   if (!isMounted) {
-    return <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="animate-pulse w-8 h-8 bg-blue-600 rounded-full"></div>
-    </div>;
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="animate-pulse w-8 h-8 bg-blue-600 rounded-full"></div>
+      </div>
+    );
   }
   
   if (!isConnected) {
@@ -138,7 +140,6 @@ export default function PoolManagement() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Network check component */}
       <NetworkCheck>
         {/* Error handler */}
         {error && (
@@ -166,73 +167,74 @@ export default function PoolManagement() {
           </motion.button>
         </motion.div>
 
-      {isLoading ? (
-        <div className="flex justify-center items-center min-h-[40vh]">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-        </div>
-      ) : pools.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-12"
-        >
-          <p className="text-gray-600 dark:text-gray-400">
-            No pools found. Create your first pool to get started!
-          </p>
-        </motion.div>
-      ) : (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {pools.map((pool, index) => (
-            <motion.div
-              key={pool.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  {pool.name}
-                </h3>
-                <span
-                  className={`px-3 py-1 rounded-full text-sm ${
-                    pool.status === 'active'
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                      : pool.status === 'paused'
-                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                  }`}
-                >
-                  {pool.status.charAt(0).toUpperCase() + pool.status.slice(1)}
-                </span>
-              </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center min-h-[40vh]">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+          </div>
+        ) : pools.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-12"
+          >
+            <p className="text-gray-600 dark:text-gray-400">
+              No pools found. Create your first pool to get started!
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {pools.map((pool, index) => (
+              <motion.div
+                key={pool.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                    {pool.name}
+                  </h3>
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      pool.status === 'active'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : pool.status === 'paused'
+                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    }`}
+                  >
+                    {pool.status.charAt(0).toUpperCase() + pool.status.slice(1)}
+                  </span>
+                </div>
 
-              <div className="space-y-2 text-gray-600 dark:text-gray-400">
-                <p>
-                  <span className="font-medium">Total Staked:</span>{' '}
-                  {formatEther(pool.totalStaked)} ETH
-                </p>
-                <p>
-                  <span className="font-medium">APR:</span> {pool.apr}%
-                </p>
-                <p>
-                  <span className="font-medium">Min Stake:</span>{' '}
-                  {formatEther(pool.minStake)} ETH
-                </p>
-                <p>
-                  <span className="font-medium">Max Stake:</span>{' '}
-                  {formatEther(pool.maxStake)} ETH
-                </p>
-                <p className="text-sm mt-4">{pool.description}</p>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
+                <div className="space-y-2 text-gray-600 dark:text-gray-400">
+                  <p>
+                    <span className="font-medium">Total Staked:</span>{' '}
+                    {formatEther(pool.totalStaked)} ETH
+                  </p>
+                  <p>
+                    <span className="font-medium">APR:</span> {pool.apr}%
+                  </p>
+                  <p>
+                    <span className="font-medium">Min Stake:</span>{' '}
+                    {formatEther(pool.minStake)} ETH
+                  </p>
+                  <p>
+                    <span className="font-medium">Max Stake:</span>{' '}
+                    {formatEther(pool.maxStake)} ETH
+                  </p>
+                  <p className="text-sm mt-4">{pool.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </NetworkCheck>
 
       {isCreatingPool && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
@@ -251,4 +253,4 @@ export default function PoolManagement() {
       )}
     </div>
   );
-} 
+}

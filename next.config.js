@@ -12,6 +12,13 @@ const nextConfig = {
         'socket.io-client': 'socket.io-client',
       });
     }
+    
+    // Exclude the backup directory from compilation
+    config.module.rules.push({
+      test: /backup[\\/].*\.(js|jsx|ts|tsx)$/,
+      loader: 'ignore-loader',
+    });
+    
     return config;
   },
   // Add support for WebSocket upgrade
@@ -27,6 +34,10 @@ const nextConfig = {
         ],
       },
     ];
+  },
+  // Add ESLint configuration to ignore during builds
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 };
 

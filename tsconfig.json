@@ -19,6 +19,5 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "hardhat.config.ts"],
-  "exclude": ["node_modules"],
-  "files": ["hardhat.config.ts"]
+  "exclude": ["node_modules", ".next", "backup", "backup/**/*"]
 }

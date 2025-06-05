@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ethers } from 'ethers';
+import { parseEther } from 'viem';
 import { useContractService } from '../../hooks/useContractService';
-import { useNetwork } from 'wagmi';
+import { useChainId } from 'wagmi';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -24,7 +24,7 @@ const REWARD_SPLIT_OPTIONS = [
 ];
 
 export const BuilderRegistration: React.FC = () => {
-    const { chain } = useNetwork();
+    const chainId = useChainId();
     const contractService = useContractService();
 
     const [formData, setFormData] = useState<BuilderRegistrationFormData>({
@@ -43,14 +43,14 @@ export const BuilderRegistration: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!chain?.id || !contractService) return;
+        if (!chainId || !contractService) return;
 
         try {
             setIsLoading(true);
-            const initialStakeWei = ethers.utils.parseEther(formData.initialStake);
+            const initialStakeWei = parseEther(formData.initialStake);
             
             const tx = await contractService.createBuilderPool(
-                chain.id,
+                chainId,
                 formData.name,
                 initialStakeWei,
                 formData.lockPeriod,

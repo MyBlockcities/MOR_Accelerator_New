@@ -136,7 +136,7 @@ function MyNFT() {
           </div>
         ) : (
           <div className="mt-8 p-6 bg-[#242435] rounded-lg text-center">
-            <p className="text-white text-lg">You don't own any NFTs yet</p>
+            <p className="text-white text-lg">You don&apos;t own any NFTs yet</p>
             <p className="text-[#acacac] mt-2">Explore the marketplace to find NFTs to purchase</p>
           </div>
         )}

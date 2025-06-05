@@ -82,7 +82,7 @@ const Rewards: NextPage = () => {
             </Head>
 
             <div className="container mx-auto px-4 py-8">
-                <h1 className="text-3xl font-bold mb-8">Rewards Dashboard</h1>
+                <h1 className="text-3xl font-bold mb-8 text-white">Rewards Dashboard</h1>
                 <ClientOnly fallback={<div className="text-center py-6">Loading rewards data...</div>}>
                     {!isConnected ? (
                         <div className="glassmorphism p-8 rounded-xl text-center max-w-2xl mx-auto">
@@ -98,50 +98,123 @@ const Rewards: NextPage = () => {
                         <>
                             {/* MOR Balance Card */}
                             {formattedBalance && (
-                                <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
-                                    <h2 className="text-xl font-semibold mb-4">Your MOR Balance</h2>
+                                <div className="glassmorphism p-6 rounded-xl mb-8 border border-gray-700/30 backdrop-blur-lg">
+                                    <h2 className="text-xl font-semibold mb-4 text-white">Your MOR Balance</h2>
                                     <div className="flex items-center">
-                                        <div className="bg-blue-100 p-3 rounded-full mr-4">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <div className="bg-purple-900/50 p-3 rounded-full mr-4 border border-purple-500/30">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
                                         </div>
                                         <div>
-                                            <p className="text-sm text-gray-500">Available Balance</p>
-                                            <p className="text-2xl font-bold">{formattedBalance} MOR</p>
+                                            <p className="text-sm text-gray-400">Available Balance</p>
+                                            <p className="text-2xl font-bold text-white">{formattedBalance} <span className="text-purple-400">MOR</span></p>
                                         </div>
                                     </div>
                                 </div>
                             )}
                             
-                            <RewardsTracker />
+                            {/* Rewards Tracker with updated styling */}
+                            <div className="mb-8">
+                                <RewardsTracker />
+                            </div>
                             
                             {/* Stats Cards */}
                             {stats && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-                                    <div className="bg-white shadow-md rounded-lg p-6">
-                                        <h3 className="text-lg font-medium text-gray-700">Total Rewards Distributed</h3>
-                                        <p className="mt-2 text-3xl font-bold text-indigo-600">
-                                            {formatEther(BigInt(stats.totalDistributed || '0'))} MOR
+                                    <div className="glassmorphism border border-indigo-500/20 rounded-xl p-6 hover:border-indigo-500/40 transition-all duration-300 backdrop-blur-lg">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <h3 className="text-lg font-medium text-gray-300">Total Rewards Distributed</h3>
+                                            <div className="bg-indigo-900/40 p-2 rounded-lg">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <p className="mt-2 text-3xl font-bold text-white">
+                                            {formatEther(BigInt(stats.totalDistributed || '0'))} <span className="text-indigo-400">MOR</span>
                                         </p>
                                     </div>
-                                    <div className="bg-white shadow-md rounded-lg p-6">
-                                        <h3 className="text-lg font-medium text-gray-700">Total Pending Rewards</h3>
-                                        <p className="mt-2 text-3xl font-bold text-green-600">
-                                            {formatEther(BigInt(stats.totalPending || '0'))} MOR
+                                    <div className="glassmorphism border border-green-500/20 rounded-xl p-6 hover:border-green-500/40 transition-all duration-300 backdrop-blur-lg">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <h3 className="text-lg font-medium text-gray-300">Total Pending Rewards</h3>
+                                            <div className="bg-green-900/40 p-2 rounded-lg">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <p className="mt-2 text-3xl font-bold text-white">
+                                            {formatEther(BigInt(stats.totalPending || '0'))} <span className="text-green-400">MOR</span>
                                         </p>
                                     </div>
-                                    <div className="bg-white shadow-md rounded-lg p-6">
-                                        <h3 className="text-lg font-medium text-gray-700">Your Total Claimed</h3>
-                                        <p className="mt-2 text-3xl font-bold text-blue-600">
-                                            {formatEther(BigInt(stats.yourTotalClaimed || '0'))} MOR
+                                    <div className="glassmorphism border border-blue-500/20 rounded-xl p-6 hover:border-blue-500/40 transition-all duration-300 backdrop-blur-lg">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <h3 className="text-lg font-medium text-gray-300">Your Total Claimed</h3>
+                                            <div className="bg-blue-900/40 p-2 rounded-lg">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <p className="mt-2 text-3xl font-bold text-white">
+                                            {formatEther(BigInt(stats.yourTotalClaimed || '0'))} <span className="text-blue-400">MOR</span>
                                         </p>
                                     </div>
-                                    <div className="bg-white shadow-md rounded-lg p-6">
-                                        <h3 className="text-lg font-medium text-gray-700">Your Pending Rewards</h3>
-                                        <p className="mt-2 text-3xl font-bold text-yellow-600">
-                                            {formatEther(BigInt(stats.yourPendingRewards || '0'))} MOR
+                                    <div className="glassmorphism border border-yellow-500/20 rounded-xl p-6 hover:border-yellow-500/40 transition-all duration-300 backdrop-blur-lg">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <h3 className="text-lg font-medium text-gray-300">Your Pending Rewards</h3>
+                                            <div className="bg-yellow-900/40 p-2 rounded-lg">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <p className="mt-2 text-3xl font-bold text-white">
+                                            {formatEther(BigInt(stats.yourPendingRewards || '0'))} <span className="text-yellow-400">MOR</span>
                                         </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Recent Claims Section */}
+                            {stats && stats.recentClaims.length > 0 && (
+                                <div className="mt-12">
+                                    <h2 className="text-2xl font-bold mb-6 text-white">Recent Claims</h2>
+                                    <div className="glassmorphism rounded-xl overflow-hidden border border-gray-700/30">
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full divide-y divide-gray-700/30">
+                                                <thead>
+                                                    <tr>
+                                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Amount</th>
+                                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Time</th>
+                                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Transaction</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-700/30">
+                                                    {stats.recentClaims.map((claim, index) => (
+                                                        <tr key={index}>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                                                                {formatEther(BigInt(claim.amount))} <span className="text-purple-400">MOR</span>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                                {new Date(claim.timestamp).toLocaleString()}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                                <a 
+                                                                    href={`https://arbiscan.io/tx/${claim.txHash}`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-indigo-400 hover:text-indigo-300 transition-colors"
+                                                                >
+                                                                    {claim.txHash.substring(0, 6)}...{claim.txHash.substring(claim.txHash.length - 6)}
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             )}

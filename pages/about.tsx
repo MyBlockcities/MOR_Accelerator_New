@@ -12,7 +12,7 @@ function AboutPage() {
               <span className="text-4xl">🚀</span>
             </div>
             <p className="text-2xl font-bold">26</p>
-            <p className="text-sm text-gray-300">MRC's Completed</p>
+            <p className="text-sm text-gray-300">MRC&apos;s Completed</p>
           </div>
           <div className="p-6 bg-white bg-opacity-20 rounded-xl shadow-md">
             <div className="flex justify-center mb-2">

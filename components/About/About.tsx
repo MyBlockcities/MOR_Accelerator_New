@@ -65,7 +65,7 @@ function About() {
               Morpheus is dedicated to democratizing AI by creating the first decentralized peer-to-peer network of personal smart agents. Our mission is to provide everyone with access to advanced AI capabilities in a permissionless, decentralized manner.
             </p>
             <p className="text-gray-300">
-              The Smart Agent concept of connecting LLMs and AI Agents to wallets, Dapps, & smart contracts promises to open the world of Web3 to everyone. Chatting in normal language with your Smart Agent and having it understand the question or task, is similar to how Google's search engine opened the early internet up to the general public.
+              The Smart Agent concept of connecting LLMs and AI Agents to wallets, Dapps, & smart contracts promises to open the world of Web3 to everyone. Chatting in normal language with your Smart Agent and having it understand the question or task, is similar to how Google&apos;s search engine opened the early internet up to the general public.
             </p>
           </motion.div>
         </div>

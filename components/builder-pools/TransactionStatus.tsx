@@ -21,6 +21,12 @@ export const TransactionStatus: React.FC<TransactionStatusProps> = ({
 
     useEffect(() => {
         const checkTransaction = async () => {
+            if (!publicClient) {
+                setStatus('error');
+                onError?.(new Error('Public client not available'));
+                return;
+            }
+            
             try {
                 const receipt = await publicClient.waitForTransactionReceipt({ 
                     hash,

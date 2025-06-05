@@ -30,6 +30,7 @@ const ImprovedConnectWallet: React.FC = () => {
                 userSelect: 'none',
               },
             })}
+            className="relative z-10"
           >
             {(() => {
               if (!connected) {
@@ -62,12 +63,21 @@ const ImprovedConnectWallet: React.FC = () => {
                 );
               }
 
+              // Get testnet status
+              const isTestnet = chain.id === 421614 || chain.id === 84531 || 
+                                process.env.NEXT_PUBLIC_ENVIRONMENT === 'development' ||
+                                process.env.ENABLE_TESTNET === 'true';
+
               return (
                 <div className="connected-wallet-container flex items-center space-x-3">
                   <button
                     onClick={openChainModal}
                     type="button"
-                    className="network-button flex items-center space-x-1 bg-gradient-to-r from-gray-800 to-gray-700 hover:from-gray-700 hover:to-gray-600 text-white text-sm font-medium py-1.5 px-3 rounded-lg transition-all duration-200"
+                    className={`network-button flex items-center space-x-1 py-1.5 px-3 rounded-lg transition-all duration-200
+                      ${isTestnet 
+                        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border border-yellow-300 dark:border-yellow-600/30'
+                        : 'bg-gradient-to-r from-gray-800 to-gray-700 hover:from-gray-700 hover:to-gray-600 text-white'
+                      }`}
                   >
                     {chain.hasIcon && (
                       <div className="network-icon w-4 h-4 mr-1">
@@ -80,7 +90,12 @@ const ImprovedConnectWallet: React.FC = () => {
                         )}
                       </div>
                     )}
-                    <span>{chain.name}</span>
+                    <span className="text-sm font-medium">{chain.name}</span>
+                    {isTestnet && (
+                      <span className="ml-1 text-xs font-medium bg-yellow-200 dark:bg-yellow-700 text-yellow-800 dark:text-yellow-100 px-1 py-0.5 rounded">
+                        TEST
+                      </span>
+                    )}
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>

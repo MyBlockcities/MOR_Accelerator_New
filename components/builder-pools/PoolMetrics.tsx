@@ -22,8 +22,8 @@ export const PoolMetrics: React.FC<PoolMetricsProps> = ({ pool, participantCount
       value: `${formatEther(pool.totalStaked)} MOR`
     },
     {
-      title: 'Reward Split',
-      value: `${Number(pool.rewardSplit) / 100}%`
+      title: 'Reward Rate',
+      value: `${Number(pool.rewardRate)}%`
     },
     {
       title: 'Lock Period',

@@ -6,7 +6,6 @@ import { formatEther } from 'viem';
 import CreatePoolForm, { type PoolFormData } from './CreatePoolForm';
 import { useBuilderPool } from '../../hooks/useBuilderPool';
 import { toast } from 'react-hot-toast';
-import NetworkCheck from '../common/NetworkCheck';
 import WalletErrorHandler from '../common/WalletErrorHandler';
 import { ContractErrorType } from '../../utils/contractErrors';
 
@@ -138,8 +137,6 @@ export default function PoolManagement() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Network check component */}
-      <NetworkCheck>
         {/* Error handler */}
         {error && (
           <WalletErrorHandler 

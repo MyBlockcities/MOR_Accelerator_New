@@ -9,29 +9,31 @@ import { BuilderPool, BuilderPoolCreationParams, StakingInfo } from '../contract
 type BuilderContract = GetContractReturnType<typeof BUILDER_ABI, PublicClient>;
 
 export function useBuilderContract(providedChainId?: number) {
-    const publicClient = usePublicClient();
+    const chainId = useChainId();
+    const publicClient = usePublicClient({
+      chainId: providedChainId || chainId
+    });
     const { data: walletClient } = useWalletClient();
-    const wagmiChainId = useChainId();
     
     // Use the provided chainId or fallback to the connected chain
-    const chainId = providedChainId || wagmiChainId;
+    const effectiveChainId = providedChainId || chainId;
 
     const contract = useMemo((): BuilderContract | null => {
         if (!publicClient) return null;
 
         const network = Object.values(NETWORK_CONFIG).find(
-            (config) => config.chainId === chainId
+            (config) => config.chainId === effectiveChainId
         );
         if (!network) return null;
 
-        const addresses = chainId === 42161 ? BUILDER_ADDRESSES.arbitrum : BUILDER_ADDRESSES.base;
+        const addresses = effectiveChainId === 42161 ? BUILDER_ADDRESSES.arbitrum : BUILDER_ADDRESSES.base;
 
         return getContract({
             address: addresses.builder as Address,
             abi: BUILDER_ABI,
             client: publicClient
         });
-    }, [chainId, publicClient]);
+    }, [effectiveChainId, publicClient]);
 
     const createBuilderPool = useCallback(
         async (params: BuilderPoolCreationParams): Promise<Hash> => {

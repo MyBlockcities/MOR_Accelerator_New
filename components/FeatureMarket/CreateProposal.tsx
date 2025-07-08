@@ -1,22 +1,20 @@
 import React, { useState } from 'react';
-import { useWeb3React } from '@web3-react/core';
-import { ethers } from 'ethers';
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  Textarea,
-  VStack,
-  NumberInput,
-  NumberInputField,
-  useToast,
-} from '@chakra-ui/react';
-import { FeatureSponsorshipMarket } from '../../contractAbi/FeatureSponsorshipMarket';
+// TODO: Re-enable these imports when component is fixed
+// import { useAccount } from 'wagmi';
+// import { ethers } from 'ethers';
+// import { FeatureSponsorshipMarket } from '../../contractAbi/FeatureSponsorshipMarket';
 
 const CreateProposal = () => {
-  const { account, library } = useWeb3React();
+  // TODO: Fix Chakra UI FormControl imports and wagmi v2 migration
+  return (
+    <div style={{ padding: '20px', textAlign: 'center' }}>
+      <h2>Create Proposal (Under Development)</h2>
+      <p>This component is being migrated to wagmi v2 and will be available soon.</p>
+    </div>
+  );
+  
+  /* Temporarily commented out until Chakra UI and wagmi v2 migration is complete
+  const { address } = useAccount();
   const toast = useToast();
 
   const [formData, setFormData] = useState({
@@ -38,7 +36,7 @@ const CreateProposal = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!account || !library) {
+    if (!address) {
       toast({
         title: 'Error',
         description: 'Please connect your wallet first',
@@ -49,10 +47,13 @@ const CreateProposal = () => {
     }
 
     try {
+      // TODO: Replace with wagmi v2 signer implementation
+      throw new Error('CreateProposal component needs wagmi v2 migration');
+      
       const contract = new ethers.Contract(
         process.env.NEXT_PUBLIC_FEATURE_MARKET_ADDRESS!,
         FeatureSponsorshipMarket.abi,
-        library.getSigner()
+        null // signer placeholder
       );
 
       const tx = await contract.createProposal(
@@ -97,8 +98,8 @@ const CreateProposal = () => {
     <Box p={6} bg="white" borderRadius="xl" boxShadow="lg">
       <form onSubmit={handleSubmit}>
         <VStack spacing={4}>
-          <FormControl isRequired>
-            <FormLabel>Title</FormLabel>
+          <div>
+            <label>Title</label>
             <Input
               name="title"
               value={formData.title}
@@ -173,7 +174,7 @@ const CreateProposal = () => {
             type="submit"
             colorScheme="blue"
             width="full"
-            isDisabled={!account}
+            isDisabled={!address}
           >
             Create Proposal
           </Button>
@@ -181,6 +182,7 @@ const CreateProposal = () => {
       </form>
     </Box>
   );
+  */
 };
 
 export default CreateProposal;

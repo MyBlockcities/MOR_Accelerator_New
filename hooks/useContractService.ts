@@ -1,20 +1,23 @@
 import { useEffect, useState } from 'react';
-import { useProvider, useSigner } from 'wagmi';
-import { Web3Provider } from '@ethersproject/providers';
-import { ContractService } from '../services/ContractService';
+import { usePublicClient, useWalletClient } from 'wagmi';
+import { createContractService, type ModernContractService } from '../services/ModernContractService';
 
+/**
+ * Updated hook using wagmi v2 with ModernContractService
+ * Replaces deprecated useProvider and useSigner hooks
+ */
 export function useContractService() {
-    const provider = useProvider();
-    const { data: signer } = useSigner();
-    const [contractService, setContractService] = useState<ContractService | null>(null);
+    const publicClient = usePublicClient();
+    const { data: walletClient } = useWalletClient();
+    const [contractService, setContractService] = useState<ModernContractService | null>(null);
 
     useEffect(() => {
-        if (!provider || !signer) return;
+        if (!publicClient) return;
         
-        const web3Provider = new Web3Provider(provider as any);
-        const service = new ContractService(web3Provider);
+        // Create service with both public and wallet clients
+        const service = createContractService(publicClient, walletClient || undefined);
         setContractService(service);
-    }, [provider, signer]);
+    }, [publicClient, walletClient]);
 
     return contractService;
 } 

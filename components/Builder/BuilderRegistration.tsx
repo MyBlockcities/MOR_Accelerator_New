@@ -53,8 +53,7 @@ export const BuilderRegistration: React.FC = () => {
                 chainId,
                 formData.name,
                 initialStakeWei,
-                formData.lockPeriod,
-                formData.rewardSplit
+                formData.lockPeriod
             );
 
             toast.info('Your builder pool is being created...', {
@@ -66,7 +65,7 @@ export const BuilderRegistration: React.FC = () => {
                 draggable: true,
             });
 
-            await tx.wait();
+            // Transaction hash is returned, no need to wait
 
             toast.success('Your builder pool has been created!', {
                 position: "top-right",

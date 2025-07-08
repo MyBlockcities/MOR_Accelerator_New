@@ -1,0 +1,254 @@
+/**
+ * Enhanced Staking Hook with Full MOR Token Integration
+ * Provides comprehensive staking functionality with proper error handling
+ */
+
+import { useState, useCallback } from 'react';
+import { useAccount, useChainId, usePublicClient, useWalletClient } from 'wagmi';
+import { parseEther, formatEther, type Address } from 'viem';
+import { createContractService } from '../services/ModernContractService';
+import { NETWORK_CONFIG } from '../config/networks';
+
+export interface StakeInfo {
+  amount: bigint;
+  lockEndTime: bigint;
+  isLocked: boolean;
+  pendingRewards: bigint;
+}
+
+export interface PoolInfo {
+  id: string;
+  name: string;
+  totalStaked: bigint;
+  rewardRate: bigint;
+  lockPeriod: number;
+}
+
+export function useStaking() {
+  const { address } = useAccount();
+  const chainId = useChainId();
+  const publicClient = usePublicClient();
+  const { data: walletClient } = useWalletClient();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Create contract service
+  const contractService = publicClient ? createContractService(publicClient, walletClient || undefined) : null;
+
+  /**
+   * Get user's stake information for a specific pool
+   */
+  const getStakeInfo = useCallback(async (poolId: string): Promise<StakeInfo | null> => {
+    if (!contractService || !address || !chainId) return null;
+
+    try {
+      setError(null);
+      const builderContract = contractService.getBuilderContract(chainId);
+      
+      // Get staking information
+      const amount = await builderContract.read.getStakerAmount([poolId as `0x${string}`, address]);
+      const lockEndTime = await builderContract.read.getLockEndTime([poolId as `0x${string}`, address]);
+      const isLocked = await builderContract.read.isLocked([poolId as `0x${string}`, address]);
+      const pendingRewards = await builderContract.read.getPendingRewards([poolId as `0x${string}`, address]);
+
+      return {
+        amount: amount as bigint,
+        lockEndTime: lockEndTime as bigint,
+        isLocked: isLocked as boolean,
+        pendingRewards: pendingRewards as bigint,
+      };
+    } catch (err) {
+      console.error('Error getting stake info:', err);
+      setError('Failed to get stake information');
+      return null;
+    }
+  }, [contractService, address, chainId]);
+
+  /**
+   * Get pool information
+   */
+  const getPoolInfo = useCallback(async (poolId: string): Promise<PoolInfo | null> => {
+    if (!contractService || !chainId) return null;
+
+    try {
+      setError(null);
+      const poolInfo = await contractService.getPoolInfo(chainId, BigInt(poolId));
+      
+      return {
+        id: poolId,
+        name: poolInfo.name || 'Unknown Pool',
+        totalStaked: poolInfo.totalStaked || BigInt(0),
+        rewardRate: poolInfo.rewardRate || BigInt(0),
+        lockPeriod: Number(poolInfo.lockPeriod || 0),
+      };
+    } catch (err) {
+      console.error('Error getting pool info:', err);
+      setError('Failed to get pool information');
+      return null;
+    }
+  }, [contractService, chainId]);
+
+  /**
+   * Get MOR token balance
+   */
+  const getMORBalance = useCallback(async (): Promise<bigint | null> => {
+    if (!contractService || !address || !chainId) return null;
+
+    try {
+      setError(null);
+      return await contractService.getMORTokenBalance(chainId, address);
+    } catch (err) {
+      console.error('Error getting MOR balance:', err);
+      setError('Failed to get MOR balance');
+      return null;
+    }
+  }, [contractService, address, chainId]);
+
+  /**
+   * Check if user has approved MOR token spending
+   */
+  const checkMORApproval = useCallback(async (spenderAddress: Address): Promise<bigint | null> => {
+    if (!contractService || !address || !chainId) return null;
+
+    try {
+      setError(null);
+      return await contractService.checkMORTokenApproval(chainId, address, spenderAddress);
+    } catch (err) {
+      console.error('Error checking MOR approval:', err);
+      setError('Failed to check MOR approval');
+      return null;
+    }
+  }, [contractService, address, chainId]);
+
+  /**
+   * Approve MOR token spending
+   */
+  const approveMOR = useCallback(async (spenderAddress: Address, amount: bigint): Promise<boolean> => {
+    if (!contractService || !chainId) return false;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const txHash = await contractService.approveMORTokenSpending(chainId, spenderAddress, amount);
+      console.log('MOR approval transaction:', txHash);
+      
+      return true;
+    } catch (err) {
+      console.error('Error approving MOR:', err);
+      setError('Failed to approve MOR tokens');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [contractService, chainId]);
+
+  /**
+   * Stake MOR tokens to a pool
+   */
+  const stakeMOR = useCallback(async (poolId: string, amount: string): Promise<boolean> => {
+    if (!contractService || !chainId) return false;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const amountBigInt = parseEther(amount);
+      const txHash = await contractService.stakeToPool(chainId, BigInt(poolId), amountBigInt);
+      console.log('Stake transaction:', txHash);
+      
+      return true;
+    } catch (err) {
+      console.error('Error staking MOR:', err);
+      setError('Failed to stake MOR tokens');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [contractService, chainId]);
+
+  /**
+   * Claim pending rewards
+   */
+  const claimRewards = useCallback(async (): Promise<boolean> => {
+    if (!contractService || !chainId) return false;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const txHash = await contractService.claimRewards(chainId);
+      console.log('Claim rewards transaction:', txHash);
+      
+      return true;
+    } catch (err) {
+      console.error('Error claiming rewards:', err);
+      setError('Failed to claim rewards');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [contractService, chainId]);
+
+  /**
+   * Get network configuration
+   */
+  const getNetworkConfig = useCallback(() => {
+    if (!chainId) return null;
+    return Object.values(NETWORK_CONFIG).find(network => network.id === chainId);
+  }, [chainId]);
+
+  /**
+   * Check if network is supported
+   */
+  const isNetworkSupported = useCallback(() => {
+    return getNetworkConfig() !== null;
+  }, [getNetworkConfig]);
+
+  /**
+   * Format MOR amount for display
+   */
+  const formatMORAmount = useCallback((amount: bigint): string => {
+    return formatEther(amount);
+  }, []);
+
+  /**
+   * Parse MOR amount from string
+   */
+  const parseMORAmount = useCallback((amount: string): bigint => {
+    return parseEther(amount);
+  }, []);
+
+  return {
+    // State
+    isLoading,
+    error,
+    isConnected: !!address,
+    currentChainId: chainId,
+    
+    // Network info
+    isNetworkSupported,
+    getNetworkConfig,
+    
+    // Read functions
+    getStakeInfo,
+    getPoolInfo,
+    getMORBalance,
+    checkMORApproval,
+    
+    // Write functions
+    approveMOR,
+    stakeMOR,
+    claimRewards,
+    
+    // Utility functions
+    formatMORAmount,
+    parseMORAmount,
+    
+    // Clear error
+    clearError: () => setError(null),
+  };
+}
+
+export default useStaking;

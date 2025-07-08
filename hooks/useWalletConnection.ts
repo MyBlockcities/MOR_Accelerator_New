@@ -1,58 +1,52 @@
 // hooks/useWalletConnection.ts
 
-import { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
+import { useState } from 'react';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useEthersProvider, useEthersSigner } from '../utils/ethersAdapters';
 
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
-
+/**
+ * Modern wallet connection hook using wagmi v2 with ethers.js adapter compatibility
+ * This replaces the legacy direct ethers.js integration
+ */
 export function useWalletConnection() {
-  const [account, setAccount] = useState<string | null>(null);
+  const { address, isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
   const [error, setError] = useState<string | null>(null);
+  
+  // Get ethers.js compatible provider and signer for backward compatibility
+  const provider = useEthersProvider();
+  const signer = useEthersSigner();
 
   const connectWallet = async () => {
-    if (typeof window.ethereum !== 'undefined') {
-      try {
-        // Request account access
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        const address = await signer.getAddress();
-        setAccount(address);
-        setError(null);
-      } catch (err) {
-        setError('Failed to connect wallet');
-        console.error(err);
+    try {
+      setError(null);
+      const connector = connectors[0]; // Use first available connector
+      if (connector) {
+        connect({ connector });
+      } else {
+        setError('No wallet connector available');
       }
-    } else {
-      setError('Please install MetaMask');
+    } catch (err) {
+      setError('Failed to connect wallet');
+      console.error(err);
     }
   };
 
   const disconnectWallet = () => {
-    setAccount(null);
+    disconnect();
+    setError(null);
   };
 
-  useEffect(() => {
-    if (typeof window.ethereum !== 'undefined') {
-      window.ethereum.on('accountsChanged', (accounts: string[]) => {
-        if (accounts.length > 0) {
-          setAccount(accounts[0]);
-        } else {
-          setAccount(null);
-        }
-      });
-    }
-
-    return () => {
-      if (window.ethereum && window.ethereum.removeListener) {
-        window.ethereum.removeListener('accountsChanged', () => {});
-      }
-    };
-  }, []);
-
-  return { account, error, connectWallet, disconnectWallet };
+  // Return wagmi data with ethers.js compatibility
+  return { 
+    account: address || null, 
+    isConnected,
+    error, 
+    connectWallet, 
+    disconnectWallet,
+    // Ethers.js compatibility
+    provider,
+    signer
+  };
 }

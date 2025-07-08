@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { ethers } from 'ethers';
-import { useProvider } from 'wagmi';
+import { ethers, formatEther } from 'ethers';
+import { useEthersProvider } from '../../utils/ethersAdapters';
 
 interface FeatureRequest {
   id: number;
@@ -13,7 +13,7 @@ interface FeatureRequest {
 
 const FeatureList: React.FC = () => {
   const [features, setFeatures] = useState<FeatureRequest[]>([]);
-  const provider = useProvider();
+  const provider = useEthersProvider();
 
   useEffect(() => {
     fetchFeatures();
@@ -23,7 +23,7 @@ const FeatureList: React.FC = () => {
     try {
       // Replace with your actual contract address and ABI
       const contractAddress = 'YOUR_CONTRACT_ADDRESS';
-      const contractABI = []; // Add your contract ABI here
+      const contractABI: any[] = []; // Add your contract ABI here
 
       const contract = new ethers.Contract(contractAddress, contractABI, provider);
 
@@ -36,7 +36,7 @@ const FeatureList: React.FC = () => {
           id: i,
           title: feature.title,
           description: feature.description,
-          morAmount: ethers.utils.formatEther(feature.morAmount),
+          morAmount: formatEther(feature.morAmount),
           milestones: feature.milestones.toNumber(),
           status: feature.status,
         });

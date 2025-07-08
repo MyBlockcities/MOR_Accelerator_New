@@ -18,7 +18,7 @@ export const baseConfig: NetworkConfig = {
     },
     tokens: {
         MOR: {
-            address: '0x0000000000000000000000000000000000000000', // Replace with actual MOR token address
+            address: '0x7431ada8a591c955a994a21710752ef9b882b8e3', // Official Base MOR token address
             decimals: 18,
             symbol: 'MOR'
         }

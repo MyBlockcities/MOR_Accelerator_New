@@ -132,20 +132,17 @@ export function BuilderPoolCreation() {
                 BigInt(parseInt(data.rewardSplit))
             ] as const;
 
-            const hash = await builderContract.write.createBuilderPool(params, {
-                account: address as `0x${string}`,
-                chain: publicClient.chain
-            });
+            // TODO: Fix createBuilderPool method call - method not available in current contract
+            throw new Error('Pool creation not yet implemented - contract method missing');
 
-            // Wait for transaction confirmation
-            const receipt = await publicClient.waitForTransactionReceipt({ hash });
-            
-            if (receipt.status === 'success') {
-                setSuccess(true);
-                reset();
-            } else {
-                setError('Transaction failed');
-            }
+            // TODO: Uncomment when createBuilderPool is implemented
+            // const receipt = await publicClient?.waitForTransactionReceipt({ hash });
+            // if (receipt?.status === 'success') {
+            //     setSuccess(true);
+            //     reset();
+            // } else {
+            //     setError('Transaction failed');
+            // }
         } catch (err: unknown) {
             const contractError = handleContractError(err as Error);
             setError(contractError.message);

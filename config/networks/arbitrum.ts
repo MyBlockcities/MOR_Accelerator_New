@@ -18,7 +18,7 @@ export const arbitrumConfig: NetworkConfig = {
     },
     tokens: {
         MOR: {
-            address: '0x0000000000000000000000000000000000000000', // Replace with actual MOR token address
+            address: '0x092baadb7def4c3981454dd9c0a0d7ff07bcfc86', // Official Arbitrum MOR token address
             decimals: 18,
             symbol: 'MOR'
         }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useWeb3React } from '@web3-react/core';
+import { useAccount } from 'wagmi';
 import { ethers } from 'ethers';
 import {
   Box,
@@ -42,7 +42,7 @@ interface ProposalCardProps {
 }
 
 const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onUpdate }) => {
-  const { account, library } = useWeb3React();
+  const { address } = useAccount();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
@@ -67,7 +67,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onUpdate }) => {
 
   const handleBidSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!account || !library) {
+    if (!address) {
       toast({
         title: 'Error',
         description: 'Please connect your wallet first',
@@ -81,7 +81,8 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onUpdate }) => {
       const contract = new ethers.Contract(
         process.env.NEXT_PUBLIC_FEATURE_MARKET_ADDRESS!,
         FeatureSponsorshipMarket.abi,
-        library.getSigner()
+        // TODO: Replace with wagmi v2 signer
+        throw new Error('ProposalCard needs wagmi v2 migration');
       );
 
       const tx = await contract.submitBid(
@@ -152,7 +153,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onUpdate }) => {
             <Text>{proposal.milestones}</Text>
           </HStack>
 
-          {proposal.status.toLowerCase() === 'open' && account && (
+          {proposal.status.toLowerCase() === 'open' && address && (
             <Button colorScheme="blue" onClick={onOpen}>
               Submit Bid
             </Button>

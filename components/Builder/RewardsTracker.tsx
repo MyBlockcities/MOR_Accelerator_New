@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
-import { useNetwork, useAccount, useContractRead } from 'wagmi';
-import { SUPPORTED_NETWORKS } from '../../config/networks';
+import { formatEther } from 'viem';
+import { useAccount, useContractRead, useChainId } from 'wagmi';
+import { NETWORK_CONFIG } from '../../config/networks';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -36,25 +36,25 @@ interface RewardHistory {
 }
 
 export const RewardsTracker: React.FC<RewardsTrackerProps> = ({ builderId }) => {
-    const { chain } = useNetwork();
+    const chainId = useChainId();
     const { address } = useAccount();
     const [rewardHistory, setRewardHistory] = useState<RewardHistory[]>([]);
     const [totalRewards, setTotalRewards] = useState<string>('0');
     const [projectedAPY, setProjectedAPY] = useState<number>(0);
 
     // Get network configuration
-    const networkConfig = chain ? SUPPORTED_NETWORKS[chain.network] : null;
+    const networkConfig = chainId ? Object.values(NETWORK_CONFIG).find(config => config.id === chainId) : null;
 
     // Contract reads
     const { data: pendingRewards } = useContractRead({
-        address: networkConfig?.contracts.builder as `0x${string}`,
+        address: networkConfig?.contracts.builders as `0x${string}`,
         abi: ['function getPendingRewards(bytes32,address) view returns (uint256)'],
         functionName: 'getPendingRewards',
         args: [builderId, address],
     });
 
     const { data: stakeInfo } = useContractRead({
-        address: networkConfig?.contracts.builder as `0x${string}`,
+        address: networkConfig?.contracts.builders as `0x${string}`,
         abi: ['function getStakeInfo(bytes32,address) view returns (tuple(uint256,uint256,uint256,uint256,bool))'],
         functionName: 'getStakeInfo',
         args: [builderId, address],
@@ -62,9 +62,9 @@ export const RewardsTracker: React.FC<RewardsTrackerProps> = ({ builderId }) => 
 
     // Calculate projected rewards and APY
     useEffect(() => {
-        if (stakeInfo && pendingRewards) {
-            const stakedAmount = Number(ethers.utils.formatEther(stakeInfo.amount));
-            const currentRewards = Number(ethers.utils.formatEther(pendingRewards));
+        if (stakeInfo && pendingRewards && (stakeInfo as any)?.amount) {
+            const stakedAmount = Number(formatEther((stakeInfo as any).amount));
+            const currentRewards = Number(formatEther(pendingRewards as bigint));
             
             // Calculate daily rate based on current rewards
             const dailyRate = currentRewards / 30; // Assuming monthly reward period
@@ -115,7 +115,7 @@ export const RewardsTracker: React.FC<RewardsTrackerProps> = ({ builderId }) => 
                 <div className="p-4 bg-blue-50 rounded-lg">
                     <h3 className="text-lg font-semibold text-blue-700">Pending Rewards</h3>
                     <p className="text-2xl font-bold text-blue-900">
-                        {pendingRewards ? ethers.utils.formatEther(pendingRewards) : '0'} MOR
+                        {pendingRewards ? formatEther(pendingRewards as bigint) : '0'} MOR
                     </p>
                 </div>
 
@@ -143,29 +143,29 @@ export const RewardsTracker: React.FC<RewardsTrackerProps> = ({ builderId }) => 
 
             <div className="border-t pt-4">
                 <h3 className="text-xl font-semibold mb-4">Staking Details</h3>
-                {stakeInfo && (
+                {stakeInfo && (stakeInfo as any) && (
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <p className="text-gray-600">Staked Amount</p>
                             <p className="font-medium">
-                                {ethers.utils.formatEther(stakeInfo.amount)} MOR
+                                {(stakeInfo as any)?.amount ? formatEther((stakeInfo as any).amount) : '0'} MOR
                             </p>
                         </div>
                         <div>
                             <p className="text-gray-600">Lock Status</p>
                             <p className="font-medium">
-                                {stakeInfo.isLocked ? (
+                                {(stakeInfo as any).isLocked ? (
                                     <span className="text-yellow-600">Locked</span>
                                 ) : (
                                     <span className="text-green-600">Unlocked</span>
                                 )}
                             </p>
                         </div>
-                        {stakeInfo.isLocked && (
+                        {(stakeInfo as any).isLocked && (
                             <div className="col-span-2">
                                 <p className="text-gray-600">Lock End Date</p>
                                 <p className="font-medium">
-                                    {new Date(Number(stakeInfo.lockEnd) * 1000).toLocaleDateString()}
+                                    {new Date(Number((stakeInfo as any).lockEnd) * 1000).toLocaleDateString()}
                                 </p>
                             </div>
                         )}
@@ -174,7 +174,7 @@ export const RewardsTracker: React.FC<RewardsTrackerProps> = ({ builderId }) => 
             </div>
 
             <div className="mt-4 text-sm text-gray-600">
-                <p>Network: {chain?.name || 'Not connected'}</p>
+                <p>Network: {networkConfig?.name || 'Not connected'}</p>
                 <p>Connected Address: {address || 'Not connected'}</p>
             </div>
         </div>

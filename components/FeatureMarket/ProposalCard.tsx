@@ -1,28 +1,9 @@
-import React, { useState } from 'react';
-import { useWeb3React } from '@web3-react/core';
-import { ethers } from 'ethers';
-import {
-  Box,
-  Heading,
-  Text,
-  Button,
-  VStack,
-  HStack,
-  Badge,
-  useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
-  FormControl,
-  FormLabel,
-  Input,
-  Textarea,
-  useToast,
-} from '@chakra-ui/react';
-import { FeatureSponsorshipMarket } from '../../contractAbi/FeatureSponsorshipMarket';
+import React from 'react';
+// TODO: Re-enable these imports when component is fixed
+// import { useState } from 'react';
+// import { useAccount } from 'wagmi';
+// import { ethers } from 'ethers';
+// import { FeatureSponsorshipMarket } from '../../contractAbi/FeatureSponsorshipMarket';
 
 interface Proposal {
   id: string;
@@ -42,7 +23,19 @@ interface ProposalCardProps {
 }
 
 const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onUpdate }) => {
-  const { account, library } = useWeb3React();
+  // TODO: Fix Chakra UI v3 compatibility and wagmi v2 migration
+  return (
+    <div style={{ padding: '20px', border: '1px solid #ccc', margin: '10px', borderRadius: '8px' }}>
+      <h3>{proposal.title}</h3>
+      <p>{proposal.description}</p>
+      <p>Status: {proposal.status}</p>
+      <p>Budget: {proposal.budget} MOR</p>
+      <small>Feature Market components are being updated for compatibility</small>
+    </div>
+  );
+  
+  /* Temporarily commented out until Chakra UI v3 and wagmi v2 migration is complete
+  const { address } = useAccount();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
@@ -67,7 +60,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onUpdate }) => {
 
   const handleBidSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!account || !library) {
+    if (!address) {
       toast({
         title: 'Error',
         description: 'Please connect your wallet first',
@@ -78,10 +71,13 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onUpdate }) => {
     }
 
     try {
+      // TODO: Replace with wagmi v2 signer
+      throw new Error('ProposalCard needs wagmi v2 migration');
+      
       const contract = new ethers.Contract(
         process.env.NEXT_PUBLIC_FEATURE_MARKET_ADDRESS!,
         FeatureSponsorshipMarket.abi,
-        library.getSigner()
+        null // signer placeholder
       );
 
       const tx = await contract.submitBid(
@@ -152,7 +148,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onUpdate }) => {
             <Text>{proposal.milestones}</Text>
           </HStack>
 
-          {proposal.status.toLowerCase() === 'open' && account && (
+          {proposal.status.toLowerCase() === 'open' && address && (
             <Button colorScheme="blue" onClick={onOpen}>
               Submit Bid
             </Button>
@@ -207,6 +203,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onUpdate }) => {
       </Modal>
     </>
   );
+  */
 };
 
 export default ProposalCard;

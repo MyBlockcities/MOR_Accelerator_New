@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useState } from 'react';
-import { useWeb3React } from '@web3-react/core';
+import { useAccount } from 'wagmi';
 
 const FeatureRequestSubmission: React.FC = () => {
-  const { account, activate } = useWeb3React();
+  const { address } = useAccount();
   const [isRegistering, setIsRegistering] = useState(false);
   const [formData, setFormData] = useState({
     description: '',
@@ -33,7 +33,7 @@ const FeatureRequestSubmission: React.FC = () => {
       <div className="bg-transparent rounded-3xl overflow-hidden">
         <div className="p-6 sm:p-8">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6 text-center">Submit Feature Request</h2>
-          {!account && !isRegistering ? (
+          {!address && !isRegistering ? (
             <div className="space-y-4">
               <button
                 onClick={handleConnect}

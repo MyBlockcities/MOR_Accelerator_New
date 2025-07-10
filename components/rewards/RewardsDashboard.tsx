@@ -35,34 +35,35 @@ export const RewardsDashboard: React.FC = () => {
                 setIsLoading(true);
                 setError(null);
 
-                // Fetch active pools for the user
-                const pools = await builderContract.read.getUserPools([address as `0x${string}`]) as `0x${string}`[];
+                // TODO: Replace with correct contract method when available
+                // const pools = await builderContract.read.getUserPools([address as `0x${string}`]) as `0x${string}`[];
                 
-                // Calculate total and pending rewards across all pools
+                // Temporarily using placeholder data until contract methods are implemented
                 let totalEarned = 0n;
                 let pendingRewards = 0n;
                 let claimableRewards = 0n;
                 let lastClaimTime = 0;
 
-                for (const pool of pools) {
-                    const poolRewards = await builderContract.read.getPendingRewards([pool, address as `0x${string}`]) as bigint;
-                    const poolStats = await builderContract.read.getStakerStats([pool, address as `0x${string}`]) as { totalEarned: bigint; lastClaimTime: bigint; isClaimable: boolean };
-                    
-                    pendingRewards += poolRewards;
-                    totalEarned += poolStats.totalEarned;
-                    lastClaimTime = Math.max(lastClaimTime, Number(poolStats.lastClaimTime));
-                    
-                    if (poolStats.isClaimable) {
-                        claimableRewards += poolRewards;
-                    }
-                }
+                // TODO: Implement proper pool iteration when getUserPools method is available
+                // for (const pool of pools) {
+                //     const poolRewards = await builderContract.read.getPendingRewards([pool, address as `0x${string}`]) as bigint;
+                //     const poolStats = await builderContract.read.getStakerStats([pool, address as `0x${string}`]) as { totalEarned: bigint; lastClaimTime: bigint; isClaimable: boolean };
+                //     
+                //     pendingRewards += poolRewards;
+                //     totalEarned += poolStats.totalEarned;
+                //     lastClaimTime = Math.max(lastClaimTime, Number(poolStats.lastClaimTime));
+                //     
+                //     if (poolStats.isClaimable) {
+                //         claimableRewards += poolRewards;
+                //     }
+                // }
 
                 setStats({
                     totalEarned,
                     pendingRewards,
                     claimableRewards,
                     lastClaimTime,
-                    activePools: pools.length
+                    activePools: 0 // TODO: Replace with actual pool count when getUserPools is implemented
                 });
             } catch (err) {
                 setError('Failed to load reward statistics');

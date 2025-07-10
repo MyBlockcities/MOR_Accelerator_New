@@ -80,67 +80,31 @@ yarn dev
 
 Visit http://localhost:3000 to view the application.
 
-## Recent Updates
-
-### Enhanced Staking Mechanism
-- **Power Factor System**: Implemented time-based staking rewards with a Power Factor Calculator
-- **Smart Contract Integration**: Direct integration with Builder Smart Contracts on Arbitrum and Base
-- **Staking Thresholds**: Added minimum staking threshold requirements for participation
-
-### Reward Distribution System
-- **Distribution Model**:
-  - 50% to stakers
-  - 20% to Maintainer Wallet
-  - 5% to Mentor Wallets
-  - 25% to Operations Multisig
-- **Liquidity Rules**:
-  - Maintainer Wallet: 50% must be staked, 50% remains liquid
-  - Mentor Wallets: 100% liquid for direct distribution
-  - Operations Multisig: Budget management for expenses
-
-### Power Factor Calculation
-- **Dynamic Scaling**: Power factor scale from 1.0x to 3.0x based on staking duration
-- **Reward Boosts**: Time-based multipliers applied to user deposits
-- **Formula**: MOR Rewards = MOR Staked × Power Factor
-
-### New UI Components
-- **Staking Interface**:
-  - `StakingForm`: For MOR token staking operations
-  - `StakingDashboard`: Centralized view of all staking information
-  - `PowerFactorInfo`: Educational component explaining power factor mechanics
-  - `RewardDistributionDashboard`: Visual representation of reward distribution
-  - `AnimatedStakingFlow`: Interactive staking process visualization
-  - `RewardVisualizationDashboard`: Real-time reward tracking and projections
-
-### Staking Pages
-- `/staking`: Core staking interface with essential functionality
-- `/enhanced-staking`: Advanced staking features with detailed analytics and visualization tools
-
-## Known Issues and Fixes
-
-### BIP39 Wordlist ESM Import Issue
-
-This project uses the `ox` package which imports wordlists from `@scure/bip39` without the `.js` extension, causing ESM import errors. The error looks like:
-
-```
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/path/to/node_modules/@scure/bip39/wordlists/czech' imported from /path/to/node_modules/ox/_esm/core/internal/mnemonic/wordlists.js
-Did you mean to import "@scure/bip39/wordlists/czech.js"?
-```
-
-We've added a postinstall script that automatically creates the missing files. If you encounter this issue:
-
-1. The script should run automatically after `npm install` or `yarn install`
-2. If the error persists, run `node scripts/fix-bip39-wordlists.js` manually
-3. Restart your development server
+**Important:** For development, always use `yarn dev`. The `yarn start` command is only for running production builds after `yarn build`.
 
 ## Available Scripts
 
-- `yarn dev` - Start development server
+- `yarn dev` - Start development server (use this for development)
 - `yarn build` - Build for production
-- `yarn start` - Run production build
+- `yarn start` - Run production build (only after building)
 - `yarn lint` - Run linting checks
 - `yarn test` - Run test suite
 - `yarn deploy:feature-market` - Deploy feature market contract
+
+### Development vs Production Commands
+
+**For Development:**
+```bash
+yarn install  # Install dependencies
+yarn dev      # Start development server
+```
+
+**For Production:**
+```bash
+yarn install  # Install dependencies
+yarn build    # Build the application
+yarn start    # Start production server
+```
 
 ## Smart Contracts
 
@@ -229,20 +193,26 @@ We've added a postinstall script that automatically creates the missing files. I
 - [viem](https://viem.sh/) - TypeScript Interface for Ethereum
 - [TailwindCSS](https://tailwindcss.com/) - Utility-first CSS framework
 - [Hardhat](https://hardhat.org/) - Ethereum development environment
-- [Socket.io](https://socket.io/) - Real-time event-based communication
-- [ox](https://www.npmjs.com/package/ox) - Wallet connection utilities (requires BIP39 wordlist fix)
-- [@scure/bip39](https://www.npmjs.com/package/@scure/bip39) - Implementation of BIP39 standard
 
 ## Deployment
 
-### Vercel Deployment
+### Vercel Deployment (Recommended)
 
-The recommended way to deploy this application is using Vercel:
+This project includes a `vercel-deploy.json` configuration file optimized for Vercel deployment:
 
 1. Push your repository to GitHub
 2. Import your repository in the Vercel dashboard
-3. Configure environment variables
-4. Deploy
+3. Vercel will automatically use the configuration from `vercel-deploy.json`
+4. Configure environment variables in the Vercel dashboard:
+   - Copy all variables from your `.env` file
+   - Make sure to set `NODE_ENV=production`
+5. Deploy
+
+The configuration automatically:
+- Uses `yarn install` for dependency installation
+- Uses `yarn build` for production builds
+- Configures Next.js framework settings
+- Sets up proper API function runtime
 
 ### Manual Deployment
 

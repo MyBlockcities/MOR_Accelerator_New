@@ -2,7 +2,8 @@ import React, { useState, useCallback } from 'react';
 import { useChainId } from 'wagmi';
 import { type Address, type Hash } from 'viem';
 import { useCrossChain } from '../hooks/useCrossChain';
-import { type CrossChainMessage } from '../services/LayerZeroService';
+// TODO: Re-enable when services folder is fixed
+// import { type CrossChainMessage } from '../services/LayerZeroService';
 import { SUPPORTED_CHAINS } from '../utils/networkSwitching';
 import TransactionNotification from './common/TransactionNotification';
 

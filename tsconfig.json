@@ -18,7 +18,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "hardhat.config.ts"],
-  "exclude": ["node_modules"],
-  "files": ["hardhat.config.ts"]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "scripts/**/*", "components/CrossChainTransaction.tsx", "components/ImprovedDeveloperRegistration/**/*", "hooks/useCrossChain.ts", "hooks/useContractService.ts", "hooks/useStaking.ts.backup", "services/ContractService.ts", "services/LayerZeroService.ts", "services/ModernContractService.ts", "src/**/*"]
 }

@@ -25,7 +25,7 @@ const MRCDashboard: React.FC<MRCDashboardProps> = ({ mrcData }) => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {category.slice(0, displayCount).map((mrc, index) => (
-          <MRCCard key={index} {...mrc} />
+          <MRCCard key={index} {...mrc} onClick={() => console.log('MRC clicked:', mrc.title)} />
         ))}
       </div>
     );

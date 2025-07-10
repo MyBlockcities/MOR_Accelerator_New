@@ -1,40 +1,46 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ethers } from 'ethers';
-import { FeatureSponsorshipMarket } from '../../../../contractAbi/FeatureSponsorshipMarket';
 
-const provider = new ethers.providers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_URL);
-const contract = new ethers.Contract(
-  process.env.NEXT_PUBLIC_FEATURE_MARKET_ADDRESS!,
-  FeatureSponsorshipMarket.abi,
-  provider
-);
+// TODO: Replace with actual contract integration when ABI is available
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.query;
-
   try {
+    const { id } = req.query;
+
     switch (req.method) {
       case 'GET':
-        const proposal = await contract.getProposal(id);
+        // Mock proposal data - TODO: Replace with actual contract calls
+        console.warn('API proposal detail: Using mock data - contract integration needed');
         
-        const formattedProposal = {
-          id: id.toString(),
-          title: proposal.title,
-          description: proposal.description,
-          budget: ethers.utils.formatEther(proposal.budget),
-          deadline: proposal.deadline.toNumber(),
-          stakeAmount: ethers.utils.formatEther(proposal.stakeAmount),
-          milestones: proposal.milestones.toNumber(),
-          status: ['Open', 'InProgress', 'Completed', 'Cancelled'][proposal.status],
-          creator: proposal.creator,
-          selectedDeveloper: proposal.selectedDeveloper
+        const mockProposal = {
+          id: id as string,
+          title: id === '1' ? 'Enhanced Dashboard UI' : 'Mobile App Development',
+          description: id === '1' 
+            ? 'Improve the main dashboard with better UX and analytics'
+            : 'Create a mobile application for the platform',
+          budget: id === '1' ? '1000' : '5000',
+          deadline: Date.now() + 30 * 24 * 60 * 60 * 1000,
+          stakeAmount: id === '1' ? '100' : '500',
+          milestones: id === '1' ? 3 : 5,
+          status: 'Open',
+          creator: '0x1234567890123456789012345678901234567890',
+          selectedDeveloper: ''
         };
 
-        res.status(200).json(formattedProposal);
+        if (!mockProposal) {
+          return res.status(404).json({ error: 'Proposal not found' });
+        }
+
+        res.status(200).json(mockProposal);
+        break;
+
+      case 'PUT':
+        // Mock proposal update - TODO: Replace with actual contract calls
+        console.warn('API proposal update: Using mock data - contract integration needed');
+        res.status(200).json({ success: true, message: 'Proposal updated (mock)' });
         break;
 
       default:
-        res.setHeader('Allow', ['GET']);
+        res.setHeader('Allow', ['GET', 'PUT']);
         res.status(405).end(`Method ${req.method} Not Allowed`);
     }
   } catch (error) {

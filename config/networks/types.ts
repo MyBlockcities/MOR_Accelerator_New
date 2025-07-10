@@ -8,6 +8,9 @@ export interface ContractAddresses {
     builder: string;
     treasury: string;
     feeConfig: string;
+    distribution: string;
+    l2TokenReceiver?: string;
+    l2MessageReceiver?: string;
 }
 
 export interface NetworkParams {

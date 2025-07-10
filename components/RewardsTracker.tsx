@@ -89,10 +89,7 @@ export function RewardsTracker() {
 
         try {
             setIsLoading(true);
-            const hash = await builderContract.write.claimRewards([poolId], {
-                account: address as `0x${string}`,
-                chain: publicClient.chain
-            });
+            const hash = await builderContract.write.claimRewards([poolId]);
 
             const receipt = await publicClient.waitForTransactionReceipt({ hash });
             

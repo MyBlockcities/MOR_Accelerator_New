@@ -22,7 +22,7 @@ export const PoolEditor: React.FC<PoolEditorProps> = ({
     isOwner
 }) => {
     const chainId = useChainId();
-    const { contract, isError } = useBuilderContract(chainId || SUPPORTED_CHAINS.ARBITRUM);
+    const { contract } = useBuilderContract(chainId || SUPPORTED_CHAINS.ARBITRUM);
     
     const [rewardSplit, setRewardSplit] = useState(currentRewardSplit);
     const [minStake, setMinStake] = useState(currentMinStake.toString());
@@ -43,14 +43,8 @@ export const PoolEditor: React.FC<PoolEditorProps> = ({
             setIsSubmitting(true);
             setError(null);
 
-            const tx = await contract.write.updatePoolSettings([
-                poolId,
-                rewardSplit,
-                parseEther(minStake),
-                maxParticipants
-            ]);
-
-            setTxHash(tx);
+            // TODO: Implement updatePoolSettings method in the contract
+            throw new Error('updatePoolSettings method not yet implemented in the contract');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to update pool settings');
         } finally {

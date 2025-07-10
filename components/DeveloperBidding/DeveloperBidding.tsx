@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ethers } from 'ethers';
-import { useProvider, useSigner } from 'wagmi';
+import { usePublicClient, useWalletClient } from 'wagmi';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -11,12 +11,12 @@ interface DeveloperBiddingProps {
 const DeveloperBidding: React.FC<DeveloperBiddingProps> = ({ featureId }) => {
   const [bidAmount, setBidAmount] = useState('');
   const [timeEstimate, setTimeEstimate] = useState('');
-  const { data: signer } = useSigner();
-  const provider = useProvider();
+  const { data: walletClient } = useWalletClient();
+  const publicClient = usePublicClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signer) {
+    if (!walletClient) {
       toast.error('Please connect your wallet');
       return;
     }
@@ -26,11 +26,13 @@ const DeveloperBidding: React.FC<DeveloperBiddingProps> = ({ featureId }) => {
       const contractAddress = 'YOUR_CONTRACT_ADDRESS';
       const contractABI = []; // Add your contract ABI here
 
-      const contract = new ethers.Contract(contractAddress, contractABI, signer);
+      // TODO: Convert walletClient to ethers signer using adapters
+      throw new Error('DeveloperBidding component needs to be updated to use wagmi v2');
 
-      const tx = await contract.submitBid(featureId, ethers.utils.parseEther(bidAmount), timeEstimate);
-      await tx.wait();
-      toast.success('Bid submitted successfully!');
+      // TODO: Uncomment when component is properly migrated to wagmi v2
+      // const tx = await contract.submitBid(featureId, ethers.utils.parseEther(bidAmount), timeEstimate);
+      // await tx.wait();
+      // toast.success('Bid submitted successfully!');
     } catch (error) {
       console.error('Error submitting bid:', error);
       toast.error('Error submitting bid');

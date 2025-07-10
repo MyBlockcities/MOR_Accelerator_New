@@ -1,165 +1,115 @@
-import { useCallback, useMemo, useState } from 'react';
-import { type Address, formatUnits, parseUnits } from 'viem';
-import { useAccount, useChainId, useReadContract, useWriteContract } from 'wagmi';
-import { MOR_TOKEN_ABI } from '../contracts/abis/MOR_TOKEN_ABI';
+import { useCallback, useMemo } from 'react';
+import { 
+  Address,
+  Hash,
+  getContract,
+  type PublicClient
+} from 'viem';
+import { usePublicClient, useWalletClient, useChainId } from 'wagmi';
+import { MOR_TOKEN_ABI } from '../contracts/abis/MorToken';
 
-export function useMORToken() {
-  const { address } = useAccount();
+// Define MOR token addresses by chain ID
+const MOR_TOKEN_ADDRESSES: Record<number, Address> = {
+  1: process.env.NEXT_PUBLIC_MOR_TOKEN_ETHEREUM as Address, // Ethereum
+  42161: process.env.NEXT_PUBLIC_MOR_TOKEN_ARBITRUM as Address, // Arbitrum
+  8453: process.env.NEXT_PUBLIC_MOR_TOKEN_BASE as Address, // Base
+  // Add testnet addresses if needed
+  421614: process.env.NEXT_PUBLIC_MOR_TOKEN_ARBITRUM_TESTNET as Address || '0x0000000000000000000000000000000000000000' as Address, // Arbitrum Sepolia
+  84531: process.env.NEXT_PUBLIC_MOR_TOKEN_BASE_TESTNET as Address || '0x0000000000000000000000000000000000000000' as Address, // Base Goerli
+};
+
+export function useMORToken(providedChainId?: number) {
   const chainId = useChainId();
-  const [loading, setLoading] = useState(false);
-  
-  // Get the right MOR token address based on the chain ID
-  const tokenAddress = useMemo((): Address | undefined => {
-    if (chainId === 1) {
-      // Ethereum
-      return process.env.NEXT_PUBLIC_MOR_TOKEN_ETHEREUM as Address;
-    } else if (chainId === 42161) {
-      // Arbitrum
-      return process.env.NEXT_PUBLIC_MOR_TOKEN_ARBITRUM as Address;
-    } else if (chainId === 8453) {
-      // Base
-      return process.env.NEXT_PUBLIC_MOR_TOKEN_BASE as Address;
-    }
-    return undefined;
-  }, [chainId]);
-  
-  // Read contract functions
-  const { data: symbol } = useReadContract({
-    address: tokenAddress,
-    abi: MOR_TOKEN_ABI,
-    functionName: 'symbol',
+  const publicClient = usePublicClient({
+    chainId: providedChainId || chainId
   });
+  const { data: walletClient } = useWalletClient();
   
-  const { data: decimals } = useReadContract({
-    address: tokenAddress,
-    abi: MOR_TOKEN_ABI,
-    functionName: 'decimals',
-  });
-  
-  const { data: balance } = useReadContract({
-    address: tokenAddress,
-    abi: MOR_TOKEN_ABI,
-    functionName: 'balanceOf',
-    args: address ? [address] : undefined,
-  });
-  
-  // Format balance for display
-  const formattedBalance = useMemo(() => {
-    if (balance && decimals) {
-      return formatUnits(balance as bigint, Number(decimals));
-    }
-    return '0';
-  }, [balance, decimals]);
-  
-  // Write contract functions
-  const { writeContractAsync: writeContract } = useWriteContract();
-  
+  // Use the provided chainId or fallback to the connected chain
+  const effectiveChainId = providedChainId || chainId;
+
+  // Get the token address for the current chain
+  const tokenAddress = useMemo(() => {
+    return MOR_TOKEN_ADDRESSES[effectiveChainId] || '0x0000000000000000000000000000000000000000' as Address;
+  }, [effectiveChainId]);
+
+  // Initialize the contract
+  const tokenContract = useMemo(() => {
+    if (!publicClient || !tokenAddress) return null;
+
+    return getContract({
+      address: tokenAddress,
+      abi: MOR_TOKEN_ABI,
+      client: publicClient as PublicClient,
+    });
+  }, [publicClient, tokenAddress]);
+
   // Approve tokens for spending
   const approve = useCallback(
-    async (spender: Address, amount: string) => {
-      if (!tokenAddress || !decimals) return;
-      setLoading(true);
-      
-      try {
-        const parsedAmount = parseUnits(amount, Number(decimals));
-        
-        const tx = await writeContract({
-          address: tokenAddress,
-          abi: MOR_TOKEN_ABI,
-          functionName: 'approve',
-          args: [spender, parsedAmount],
-        });
-        
-        setLoading(false);
-        return tx;
-      } catch (error) {
-        console.error('Error approving tokens:', error);
-        setLoading(false);
-        throw error;
+    async (spender: Address, amount: bigint): Promise<Hash> => {
+      if (!tokenContract || !walletClient) {
+        throw new Error('Token contract not initialized or wallet not connected');
       }
+
+      const { request } = await tokenContract.simulate.approve([spender, amount], {
+        account: walletClient.account.address,
+      });
+
+      return walletClient.writeContract(request);
     },
-    [tokenAddress, decimals, writeContract]
+    [tokenContract, walletClient]
   );
-  
-  // Check allowance
-  const { data: allowance, refetch: refetchAllowance } = useReadContract({
-    address: tokenAddress,
-    abi: MOR_TOKEN_ABI,
-    functionName: 'allowance',
-    args: address && tokenAddress ? [address, tokenAddress] : undefined,
-  });
-  
-  // Format allowance for display
-  const formattedAllowance = useMemo(() => {
-    if (allowance && decimals) {
-      return formatUnits(allowance as bigint, Number(decimals));
-    }
-    return '0';
-  }, [allowance, decimals]);
-  
-  // Send tokens cross-chain (OFT functionality)
-  const sendCrossChain = useCallback(
-    async (dstChainId: number, toAddress: Address, amount: string) => {
-      if (!tokenAddress || !decimals || !address) return;
-      setLoading(true);
-      
-      try {
-        const parsedAmount = parseUnits(amount, Number(decimals));
-        
-        // Encode the address as bytes
-        const addressBytes = `0x000000000000000000000000${toAddress.slice(2)}` as `0x${string}`;
-        
-        // Estimate fee first
-        const txHash = await writeContract({
-          address: tokenAddress,
-          abi: MOR_TOKEN_ABI,
-          functionName: 'estimateSendFee',
-          args: [BigInt(dstChainId), addressBytes, parsedAmount, false, '0x'],
-        });
-        
-        // For simplicity, we'll use a fixed gas amount since we can't directly get the result
-        // In a production app, you would need to listen for events or query for the result
-        const estimatedFee = parseUnits('0.01', 18); // 0.01 ETH as estimated fee
-        
-        // The actual cross-chain transfer
-        const tx = await writeContract({
-          address: tokenAddress,
-          abi: MOR_TOKEN_ABI,
-          functionName: 'sendFrom',
-          args: [
-            address,
-            BigInt(dstChainId),
-            addressBytes,
-            parsedAmount,
-            address, // refund address
-            '0x0000000000000000000000000000000000000000' as Address, // zero address for zroPaymentAddress
-            '0x',
-          ],
-          value: estimatedFee, // Use our estimated fee
-        });
-        
-        setLoading(false);
-        return tx;
-      } catch (error) {
-        console.error('Error sending tokens cross-chain:', error);
-        setLoading(false);
-        throw error;
+
+  // Get token balance
+  const getBalance = useCallback(
+    async (address: Address): Promise<bigint> => {
+      if (!tokenContract) {
+        throw new Error('Token contract not initialized');
       }
+
+      const result = await tokenContract.read.balanceOf([address]);
+      return result as bigint;
     },
-    [tokenAddress, decimals, address, writeContract]
+    [tokenContract]
   );
-  
+
+  // Get token allowance
+  const getAllowance = useCallback(
+    async (owner: Address, spender: Address): Promise<bigint> => {
+      if (!tokenContract) {
+        return BigInt(0);
+      }
+
+      const result = await tokenContract.read.allowance([owner, spender]);
+      return result as bigint;
+    },
+    [tokenContract]
+  );
+
+  // Transfer tokens
+  const transfer = useCallback(
+    async (to: Address, amount: bigint): Promise<Hash> => {
+      if (!tokenContract || !walletClient) {
+        throw new Error('Token contract not initialized or wallet not connected');
+      }
+
+      const { request } = await tokenContract.simulate.transfer([to, amount], {
+        account: walletClient.account.address,
+      });
+
+      return walletClient.writeContract(request);
+    },
+    [tokenContract, walletClient]
+  );
+
   return {
-    address: tokenAddress,
-    symbol,
-    decimals: decimals ? Number(decimals) : undefined,
-    balance,
-    formattedBalance,
-    allowance,
-    formattedAllowance,
+    tokenContract,
+    tokenAddress,
     approve,
-    refetchAllowance,
-    sendCrossChain,
-    loading
+    getBalance,
+    getAllowance,
+    transfer,
   };
 }
+
+export default useMORToken;

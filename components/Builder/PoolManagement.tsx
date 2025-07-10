@@ -6,7 +6,6 @@ import { formatEther } from 'viem';
 import CreatePoolForm, { type PoolFormData } from './CreatePoolForm';
 import { useBuilderPool } from '../../hooks/useBuilderPool';
 import { toast } from 'react-hot-toast';
-import NetworkCheck from '../common/NetworkCheck';
 import WalletErrorHandler from '../common/WalletErrorHandler';
 import { ContractErrorType } from '../../utils/contractErrors';
 
@@ -28,12 +27,16 @@ export default function PoolManagement() {
   const [pools, setPools] = useState<Array<{
     id: string;
     name: string;
+    owner: any;
+    token: any;
+    maxParticipants: number;
     totalStaked: bigint;
-    apr: number;
     minStake: bigint;
     maxStake: bigint;
-    status: 'active' | 'paused' | 'closed';
-    description: string;
+    isActive: boolean;
+    apr?: number;
+    status?: 'active' | 'paused' | 'closed';
+    description?: string;
   }>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<{type: ContractErrorType; message: string} | null>(null);
@@ -138,8 +141,6 @@ export default function PoolManagement() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Network check component */}
-      <NetworkCheck>
         {/* Error handler */}
         {error && (
           <WalletErrorHandler 
@@ -200,14 +201,14 @@ export default function PoolManagement() {
                 </h3>
                 <span
                   className={`px-3 py-1 rounded-full text-sm ${
-                    pool.status === 'active'
+                    (pool.status || 'active') === 'active'
                       ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                      : pool.status === 'paused'
+                      : (pool.status || 'active') === 'paused'
                       ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                       : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                   }`}
                 >
-                  {pool.status.charAt(0).toUpperCase() + pool.status.slice(1)}
+                  {(pool.status || 'active').charAt(0).toUpperCase() + (pool.status || 'active').slice(1)}
                 </span>
               </div>
 
@@ -217,7 +218,7 @@ export default function PoolManagement() {
                   {formatEther(pool.totalStaked)} ETH
                 </p>
                 <p>
-                  <span className="font-medium">APR:</span> {pool.apr}%
+                  <span className="font-medium">APR:</span> {pool.apr || 0}%
                 </p>
                 <p>
                   <span className="font-medium">Min Stake:</span>{' '}
@@ -227,7 +228,7 @@ export default function PoolManagement() {
                   <span className="font-medium">Max Stake:</span>{' '}
                   {formatEther(pool.maxStake)} ETH
                 </p>
-                <p className="text-sm mt-4">{pool.description}</p>
+                {pool.description && <p className="text-sm mt-4">{pool.description}</p>}
               </div>
             </motion.div>
           ))}

@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react';
 import { type Address, type Hash, encodePacked, parseEther } from 'viem';
 import { usePublicClient, useWalletClient, useChainId } from 'wagmi';
-import { LayerZeroService, type CrossChainMessage } from '../services/LayerZeroService';
+// TODO: Re-enable when services folder is fixed
+// import { LayerZeroService, type CrossChainMessage } from '../services/LayerZeroService';
 import { handleContractError } from '../utils/contractErrors';
 import { SUPPORTED_CHAINS } from '../utils/networkSwitching';
 

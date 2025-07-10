@@ -11,7 +11,7 @@ import ConnectWalletWrapper from '../../components/ConnectWallet/ConnectWalletWr
 
 const BuilderPools: NextPage = () => {
     const { isConnected, address } = useAccount();
-    const { approve, loading: tokenLoading } = useMORToken();
+    const { approve } = useMORToken();
     const [isLoading, setIsLoading] = useState(false);
     
     // Form state
@@ -144,7 +144,7 @@ const BuilderPools: NextPage = () => {
                                             <button
                                                 type="submit"
                                                 className="w-full px-8 py-3 bg-[#00FF84] text-gray-900 rounded-lg font-semibold hover-glow transition-all"
-                                                disabled={isLoading || tokenLoading}
+                                                disabled={isLoading}
                                             >
                                                 Create Pool
                                             </button>

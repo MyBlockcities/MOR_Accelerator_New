@@ -22,7 +22,8 @@ interface StakingStats {
 const Stake: NextPage = () => {
     const { address, isConnected } = useAccount();
     const { contract: stakingContract, isLoading: contractLoading } = useStakingContract(42161); // Default to Arbitrum
-    const { balance, formattedBalance, loading: tokenLoading } = useMORToken();
+    const { tokenContract } = useMORToken();
+    // TODO: Add balance, formattedBalance, and loading when implemented in useMORToken hook
     const [stats, setStats] = useState<StakingStats | null>(null);
     const [loading, setLoading] = useState(true);
     const [isClient, setIsClient] = useState(false);
@@ -78,7 +79,7 @@ const Stake: NextPage = () => {
         loadStats();
     }, [stakingContract, isConnected, address]);
 
-    if (!isClient || contractLoading || loading || tokenLoading) {
+    if (!isClient || contractLoading || loading) {
         return (
             <div className="relative min-h-screen bg-dark-bg bg-grid-pattern">
                 <div className="bg-gradient-glow" />
@@ -141,23 +142,7 @@ const Stake: NextPage = () => {
                             </motion.div>
                         )}
                         
-                        {/* MOR Token Balance Card */}
-                        {isConnected && formattedBalance && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.3 }}
-                                className="glassmorphism p-6 rounded-xl mb-8"
-                            >
-                                <h3 className="text-xl font-medium text-gray-300">Your MOR Balance</h3>
-                                <p className="mt-2 text-3xl font-semibold text-white">
-                                    {formattedBalance} <span className="text-[#00FF84]">MOR</span>
-                                </p>
-                                <p className="mt-2 text-sm text-gray-400">
-                                    Available for staking in builder pools
-                                </p>
-                            </motion.div>
-                        )}
+                        {/* TODO: MOR Token Balance Card - implement when formattedBalance is available */}
                     </ClientOnly>
 
                     <ClientOnly fallback={<div className="text-center py-6">Loading wallet connection...</div>}>

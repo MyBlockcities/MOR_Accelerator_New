@@ -1,4 +1,4 @@
-import { Chain } from 'wagmi';
+import { type Chain } from 'viem';
 
 export const SUPPORTED_CHAINS = {
     ARBITRUM: 42161,
@@ -79,7 +79,7 @@ export async function switchNetwork(chainId: number): Promise<void> {
 }
 
 export function isNetworkSupported(chainId: number): boolean {
-    return Object.values(SUPPORTED_CHAINS).includes(chainId);
+    return Object.values(SUPPORTED_CHAINS).includes(chainId as any);
 }
 
 export function getNetworkConfig(chainId: number): NetworkConfig {

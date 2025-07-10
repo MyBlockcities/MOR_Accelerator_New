@@ -1,12 +1,6 @@
 {
-  "version": 2,
-  "buildCommand": "yarn install && yarn build",
-  "installCommand": "yarn install",
-  "framework": "nextjs",
-  "env": {
-    "NEXT_PUBLIC_ENVIRONMENT": "production"
-  },
-  "github": {
-    "silent": true
-  }
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build", 
+  "devCommand": "npm run dev",
+  "nodeVersion": "18.x"
 }

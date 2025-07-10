@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-// import { useMorpheusStaking } from '../../hooks/useMorpheusStaking'; // Temporarily disabled
+import { useMorpheusStaking } from '../../hooks/useMorpheusStaking';
 import { useChainId } from 'wagmi';
 import { NETWORK_CONFIG } from '../../config/networks';
 import { toast } from 'react-toastify';
@@ -28,24 +28,6 @@ const stakingSchema = z.object({
 type StakingFormData = z.infer<typeof stakingSchema>;
 
 export const StakingInterface: React.FC<StakingInterfaceProps> = ({ builderId }) => {
-    // Temporarily using mock data while fixing viem v2 API compatibility
-    const mockStakingHook = {
-        getDistributionPoolInfo: async (_poolId: number) => null,
-        stakeToDistributionPool: async (_poolId: number, _amount: bigint, _lockPeriod?: bigint) => null,
-        claimDistributionRewards: async (_poolId: number) => null,
-        withdrawFromDistributionPool: async (_poolId: number, _amount: bigint) => null,
-        getMORBalance: async () => null,
-        checkMORAllowance: async () => null,
-        approveMOR: async (_amount: bigint) => null,
-        formatMORAmount: (_amount: bigint) => '0',
-        parseMORAmount: (_amount: string) => BigInt(0),
-        isLoading: false,
-        morBalance: BigInt(0),
-        morAllowance: BigInt(0),
-        isStakingSupported: true,
-        networkName: 'Morpheus Network'
-    };
-    
     const {
         getDistributionPoolInfo,
         stakeToDistributionPool,
@@ -61,7 +43,7 @@ export const StakingInterface: React.FC<StakingInterfaceProps> = ({ builderId })
         morAllowance,
         isStakingSupported,
         networkName
-    } = mockStakingHook;
+    } = useMorpheusStaking();
     const chainId = useChainId();
     const networkConfig = chainId ? Object.values(NETWORK_CONFIG).find(config => config.id === chainId) : null;
     const [isSubmitting, setIsSubmitting] = useState(false);

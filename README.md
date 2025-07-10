@@ -80,14 +80,31 @@ yarn dev
 
 Visit http://localhost:3000 to view the application.
 
+**Important:** For development, always use `yarn dev`. The `yarn start` command is only for running production builds after `yarn build`.
+
 ## Available Scripts
 
-- `yarn dev` - Start development server
+- `yarn dev` - Start development server (use this for development)
 - `yarn build` - Build for production
-- `yarn start` - Run production build
+- `yarn start` - Run production build (only after building)
 - `yarn lint` - Run linting checks
 - `yarn test` - Run test suite
 - `yarn deploy:feature-market` - Deploy feature market contract
+
+### Development vs Production Commands
+
+**For Development:**
+```bash
+yarn install  # Install dependencies
+yarn dev      # Start development server
+```
+
+**For Production:**
+```bash
+yarn install  # Install dependencies
+yarn build    # Build the application
+yarn start    # Start production server
+```
 
 ## Smart Contracts
 
@@ -179,14 +196,23 @@ Visit http://localhost:3000 to view the application.
 
 ## Deployment
 
-### Vercel Deployment
+### Vercel Deployment (Recommended)
 
-The recommended way to deploy this application is using Vercel:
+This project includes a `vercel-deploy.json` configuration file optimized for Vercel deployment:
 
 1. Push your repository to GitHub
 2. Import your repository in the Vercel dashboard
-3. Configure environment variables
-4. Deploy
+3. Vercel will automatically use the configuration from `vercel-deploy.json`
+4. Configure environment variables in the Vercel dashboard:
+   - Copy all variables from your `.env` file
+   - Make sure to set `NODE_ENV=production`
+5. Deploy
+
+The configuration automatically:
+- Uses `yarn install` for dependency installation
+- Uses `yarn build` for production builds
+- Configures Next.js framework settings
+- Sets up proper API function runtime
 
 ### Manual Deployment
 

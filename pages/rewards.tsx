@@ -28,8 +28,10 @@ interface RewardsStats {
 const Rewards: NextPage = () => {
     const { address, isConnected } = useAccount();
     const { contract: builderContract } = useBuilderContract();
-    const { contract: stakingContract } = useStakingContract();
-    const { formattedBalance, loading: tokenLoading } = useMORToken();
+    const chainId = 42161; // Default to Arbitrum - TODO: Get from current chain
+    const { contract: stakingContract } = useStakingContract(chainId);
+    const { tokenContract } = useMORToken();
+    // TODO: Add formattedBalance and loading when implemented in useMORToken hook
     const [stats, setStats] = useState<RewardsStats | null>(null);
     const [loading, setLoading] = useState(true);
     const [isClient, setIsClient] = useState(false);
@@ -66,7 +68,7 @@ const Rewards: NextPage = () => {
         }
     }, [isClient, isConnected]);
 
-    if (loading || tokenLoading || !isClient) {
+    if (loading || !isClient) {
         return (
             <MainLayout>
                 <LoadingState message="Loading rewards information..." />
@@ -96,23 +98,7 @@ const Rewards: NextPage = () => {
                         </div>
                     ) : (
                         <>
-                            {/* MOR Balance Card */}
-                            {formattedBalance && (
-                                <div className="glassmorphism p-6 rounded-xl mb-8 border border-gray-700/30 backdrop-blur-lg">
-                                    <h2 className="text-xl font-semibold mb-4 text-white">Your MOR Balance</h2>
-                                    <div className="flex items-center">
-                                        <div className="bg-purple-900/50 p-3 rounded-full mr-4 border border-purple-500/30">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-400">Available Balance</p>
-                                            <p className="text-2xl font-bold text-white">{formattedBalance} <span className="text-purple-400">MOR</span></p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                            {/* TODO: MOR Balance Card - implement when formattedBalance is available */}
                             
                             {/* Rewards Tracker with updated styling */}
                             <div className="mb-8">

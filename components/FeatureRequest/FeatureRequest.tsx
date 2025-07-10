@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ethers } from 'ethers';
-import { useProvider, useSigner } from 'wagmi';
+import { ethers, parseEther } from 'ethers';
+import { useEthersProvider, useEthersSigner } from '../../utils/ethersAdapters';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -9,27 +9,29 @@ const FeatureRequest = () => {
   const [description, setDescription] = useState('');
   const [morAmount, setMorAmount] = useState('');
   const [milestones, setMilestones] = useState('1');
-  const { data: signer } = useSigner();
-  const provider = useProvider();
+  const signer = useEthersSigner();
+  const provider = useEthersProvider();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signer) {
-      toast.error('Please connect your wallet');
-      return;
-    }
-
+    
     try {
+      const resolvedSigner = await signer;
+      if (!resolvedSigner) {
+        toast.error('Please connect your wallet');
+        return;
+      }
+
       // Replace with your actual contract address and ABI
       const contractAddress = 'YOUR_CONTRACT_ADDRESS';
-      const contractABI = []; // Add your contract ABI here
+      const contractABI: any[] = []; // Add your contract ABI here
 
-      const contract = new ethers.Contract(contractAddress, contractABI, signer);
+      const contract = new ethers.Contract(contractAddress, contractABI, resolvedSigner);
 
       const tx = await contract.createFeatureRequest(
         title,
         description,
-        ethers.utils.parseEther(morAmount),
+        parseEther(morAmount),
         parseInt(milestones)
       );
 

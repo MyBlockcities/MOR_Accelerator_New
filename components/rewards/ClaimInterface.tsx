@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAccount, useChainId } from 'wagmi';
+import { useAccount, useChainId, usePublicClient } from 'wagmi';
 import { motion } from 'framer-motion';
 import { formatEther, type Hash } from 'viem';
 import { useBuilderContract } from '../../hooks/useBuilderContract';
@@ -18,6 +18,7 @@ export const ClaimInterface: React.FC<ClaimInterfaceProps> = ({
 }) => {
     const { address } = useAccount();
     const chainId = useChainId();
+    const publicClient = usePublicClient();
     const { contract: builderContract } = useBuilderContract(chainId || SUPPORTED_CHAINS.ARBITRUM);
     
     const [isLoading, setIsLoading] = useState(false);
@@ -31,21 +32,17 @@ export const ClaimInterface: React.FC<ClaimInterfaceProps> = ({
             setIsLoading(true);
             setError(null);
 
-            // Estimate gas for the claim transaction
-            const gasEstimate = await builderContract.estimateGas.claimRewards([address as `0x${string}`]);
-            
             // Execute the claim transaction
-            const tx = await builderContract.write.claimRewards(
-                [address as `0x${string}`],
-                { gasLimit: (gasEstimate * 110n) / 100n } // Add 10% buffer
-            );
+            const tx = await builderContract.write.claimRewards([address as `0x${string}`]);
 
             setTxHash(tx);
             
             // Wait for transaction confirmation
-            const receipt = await tx.wait();
+            const receipt = await publicClient?.waitForTransactionReceipt({
+                hash: tx,
+            });
             
-            if (receipt.status === 'success') {
+            if (receipt?.status === 'success') {
                 onClaimSuccess?.();
             }
         } catch (err) {
@@ -76,11 +73,11 @@ export const ClaimInterface: React.FC<ClaimInterfaceProps> = ({
                     </span>
                 </div>
 
-                {/* Gas Estimation */}
-                <GasEstimator
+                {/* Gas Estimation - Temporarily disabled for build compatibility */}
+                {/* <GasEstimator
                     contractFunction={builderContract?.estimateGas.claimRewards}
                     args={[address as `0x${string}`]}
-                />
+                /> */}
 
                 {/* Claim Button */}
                 <motion.button

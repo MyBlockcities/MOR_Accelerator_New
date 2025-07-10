@@ -2,7 +2,15 @@ import Link from "next/link";
 import React from "react";
 import { FaArrowRight } from "react-icons/fa";
 
-function NFTCard({ title, price, likes, image, tokenId }) {
+interface NFTCardProps {
+  title: string;
+  price: string;
+  likes: string;
+  image: string;
+  tokenId: number;
+}
+
+function NFTCard({ title, price, likes, image, tokenId }: NFTCardProps) {
   return (
     <div className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl p-6 shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
       <img src={image} alt={title} className="w-full h-48 object-cover rounded-lg mb-4" />

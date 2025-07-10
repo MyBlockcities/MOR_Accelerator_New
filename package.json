@@ -21,7 +21,7 @@
     "deploy:dev-registry": "hardhat run scripts/deploy-hardhat.js",
     "deploy:dev-registry:arbitrum": "hardhat run scripts/deploy-hardhat.js --network arbitrum",
     "deploy:dev-registry:arbitrum-sepolia": "hardhat run scripts/deploy-hardhat.js --network arbitrum-sepolia",
-    "deploy:dev-registry:base": "hardhat run scripts/deploy-hardhat.js --network base", 
+    "deploy:dev-registry:base": "hardhat run scripts/deploy-hardhat.js --network base",
     "deploy:dev-registry:base-sepolia": "hardhat run scripts/deploy-hardhat.js --network base-sepolia"
   },
   "dependencies": {

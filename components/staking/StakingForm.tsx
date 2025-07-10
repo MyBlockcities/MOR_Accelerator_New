@@ -12,7 +12,7 @@ import RewardDistributionInfo from './RewardDistributionInfo';
 const StakingForm: React.FC<{ poolId: `0x${string}` }> = ({ poolId }) => {
   const { address } = useAccount();
   const chainId = useChainId();
-  const { formattedBalance, symbol } = useMORToken();
+  const { getBalance } = useMORToken();
   const { enhancedStake, isLoading, error, meetsMinimumStakingThreshold, minimumStakingThreshold } = useEnhancedStakingContract(chainId);
   
   const [amount, setAmount] = useState('');
@@ -26,7 +26,7 @@ const StakingForm: React.FC<{ poolId: `0x${string}` }> = ({ poolId }) => {
       setSuccessMessage('');
       const txHash = await enhancedStake(poolId, amount, stakingPeriod);
       if (txHash) {
-        setSuccessMessage(`Successfully staked ${amount} ${symbol} with a lock period of ${stakingPeriod / (24 * 60 * 60)} days!`);
+        setSuccessMessage(`Successfully staked ${amount} MOR with a lock period of ${stakingPeriod / (24 * 60 * 60)} days!`);
         setAmount('');
       }
     } catch (err) {
@@ -34,9 +34,14 @@ const StakingForm: React.FC<{ poolId: `0x${string}` }> = ({ poolId }) => {
     }
   };
 
-  const handleMaxAmount = () => {
-    if (formattedBalance) {
-      setAmount(formattedBalance);
+  const handleMaxAmount = async () => {
+    if (address) {
+      try {
+        const balance = await getBalance(address);
+        setAmount((balance / BigInt(10**18)).toString()); // Convert from wei to MOR
+      } catch (error) {
+        console.error('Error getting balance:', error);
+      }
     }
   };
 
@@ -52,12 +57,12 @@ const StakingForm: React.FC<{ poolId: `0x${string}` }> = ({ poolId }) => {
           
           <Box sx={{ mb: 2 }}>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Available Balance: {formattedBalance} {symbol}
+              Available Balance: Loading... MOR
             </Typography>
             
             {!meetsMinimumStakingThreshold && (
               <Typography variant="body2" color="error" sx={{ mb: 2 }}>
-                You need at least {minimumStakingThreshold} {symbol} to stake.
+                You need at least {minimumStakingThreshold} MOR to stake.
               </Typography>
             )}
           </Box>

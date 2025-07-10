@@ -20,7 +20,7 @@ const PowerFactorInfo: React.FC = () => {
       <CardContent>
         <Box sx={{ mb: 3 }}>
           <Typography variant="body1" paragraph>
-            The Power Factor method boosts your staking rewards based on how long you've staked your MOR tokens.
+            The Power Factor method boosts your staking rewards based on how long you&apos;ve staked your MOR tokens.
             The longer you stake, the higher your power factor, and the more rewards you earn.
           </Typography>
           <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
@@ -49,17 +49,17 @@ const PowerFactorInfo: React.FC = () => {
           return (
             <Box key={index} sx={{ mb: 2 }}>
               <Grid container spacing={2} alignItems="center">
-                <Grid item xs={3}>
+                <Grid size={3}>
                   <Typography variant="body2" fontWeight="bold">
                     {tier.duration}
                   </Typography>
                 </Grid>
-                <Grid item xs={2}>
+                <Grid size={2}>
                   <Typography variant="body2" color="primary" fontWeight="bold">
                     {tier.factor}
                   </Typography>
                 </Grid>
-                <Grid item xs={7}>
+                <Grid size={7}>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Box sx={{ width: '100%', mr: 1 }}>
                       <LinearProgress 

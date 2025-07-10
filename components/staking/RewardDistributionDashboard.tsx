@@ -88,7 +88,7 @@ const RewardDistributionDashboard: React.FC = () => {
           
           <Grid container spacing={3}>
             {/* Stakers */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Card variant="outlined" sx={{ height: '100%' }}>
                 <CardContent>
                   <Typography variant="h6" color="primary" gutterBottom>
@@ -105,7 +105,7 @@ const RewardDistributionDashboard: React.FC = () => {
             </Grid>
             
             {/* Maintainer */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Card variant="outlined" sx={{ height: '100%' }}>
                 <CardContent>
                   <Typography variant="h6" color="primary" gutterBottom>
@@ -116,7 +116,7 @@ const RewardDistributionDashboard: React.FC = () => {
                   </Typography>
                   <Divider sx={{ my: 1 }} />
                   <Grid container spacing={1}>
-                    <Grid item xs={6}>
+                    <Grid size={6}>
                       <Typography variant="body2" color="text.secondary">
                         Must Stake ({liquidityRules.MAINTAINER.STAKED}%):
                       </Typography>
@@ -124,7 +124,7 @@ const RewardDistributionDashboard: React.FC = () => {
                         {formattedRequiredStaking} MOR
                       </Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={6}>
                       <Typography variant="body2" color="text.secondary">
                         Liquid ({liquidityRules.MAINTAINER.LIQUID}%):
                       </Typography>
@@ -138,7 +138,7 @@ const RewardDistributionDashboard: React.FC = () => {
             </Grid>
             
             {/* Mentors */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Card variant="outlined" sx={{ height: '100%' }}>
                 <CardContent>
                   <Typography variant="h6" color="primary" gutterBottom>
@@ -155,7 +155,7 @@ const RewardDistributionDashboard: React.FC = () => {
             </Grid>
             
             {/* Operations */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Card variant="outlined" sx={{ height: '100%' }}>
                 <CardContent>
                   <Typography variant="h6" color="primary" gutterBottom>

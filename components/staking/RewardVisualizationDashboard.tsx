@@ -138,7 +138,7 @@ const RewardVisualizationDashboard: React.FC<RewardVisualizationDashboardProps> 
         {/* Summary cards */}
         <Box sx={{ p: 2 }}>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
@@ -160,7 +160,7 @@ const RewardVisualizationDashboard: React.FC<RewardVisualizationDashboardProps> 
               </motion.div>
             </Grid>
             
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
@@ -182,7 +182,7 @@ const RewardVisualizationDashboard: React.FC<RewardVisualizationDashboardProps> 
               </motion.div>
             </Grid>
             
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
@@ -204,7 +204,7 @@ const RewardVisualizationDashboard: React.FC<RewardVisualizationDashboardProps> 
               </motion.div>
             </Grid>
             
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
@@ -295,7 +295,7 @@ const RewardVisualizationDashboard: React.FC<RewardVisualizationDashboardProps> 
                 
                 <Typography variant="body2" color="text.secondary">
                   Your rewards are calculated based on your staked amount, power factor, and the total staking pool.
-                  With your current power factor of {powerFactor.toFixed(2)}x, you're earning rewards faster than base stakers.
+                  With your current power factor of {powerFactor.toFixed(2)}x, you&apos;re earning rewards faster than base stakers.
                 </Typography>
               </motion.div>
             )}
@@ -400,7 +400,7 @@ const RewardVisualizationDashboard: React.FC<RewardVisualizationDashboardProps> 
                 </Box>
                 
                 <Typography variant="body2" color="text.secondary">
-                  As a staker, you're part of the {REWARD_DISTRIBUTION.STAKERS}% allocation. Your share within this allocation
+                  As a staker, you&apos;re part of the {REWARD_DISTRIBUTION.STAKERS}% allocation. Your share within this allocation
                   is determined by your effective stake (actual stake × power factor) relative to the total effective stake in the pool.
                 </Typography>
               </motion.div>

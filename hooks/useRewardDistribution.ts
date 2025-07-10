@@ -9,7 +9,7 @@ import { useMORToken } from './useMORToken';
  */
 export function useRewardDistribution() {
   const { address } = useAccount();
-  const { balance, formattedBalance } = useMORToken();
+  const { getBalance } = useMORToken();
 
   // Get reward distribution percentages
   const getRewardDistribution = useCallback(() => {
@@ -17,10 +17,17 @@ export function useRewardDistribution() {
   }, []);
 
   // Check if user meets minimum staking threshold
-  const meetsMinimumStakingThreshold = useMemo(() => {
-    if (!formattedBalance) return false;
-    return parseFloat(formattedBalance) >= parseFloat(MINIMUM_STAKING_THRESHOLD);
-  }, [formattedBalance]);
+  const meetsMinimumStakingThreshold = useCallback(async () => {
+    if (!address) return false;
+    try {
+      const balance = await getBalance(address);
+      const formattedBalance = (balance / BigInt(10**18)).toString(); // Convert from wei to MOR
+      return parseFloat(formattedBalance) >= parseFloat(MINIMUM_STAKING_THRESHOLD);
+    } catch (error) {
+      console.error('Error checking minimum staking threshold:', error);
+      return false;
+    }
+  }, [address, getBalance]);
 
   // Calculate reward amounts based on total rewards
   const calculateRewardAmounts = useCallback((totalRewards: bigint) => {

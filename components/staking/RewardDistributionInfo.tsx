@@ -19,7 +19,7 @@ const RewardDistributionInfo: React.FC = () => {
       <CardContent>
         <Grid container spacing={2}>
           {/* Stakers */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <Typography variant="h6" sx={{ mr: 1 }}>
                 Stakers: {rewardDistribution.STAKERS}%
@@ -35,7 +35,7 @@ const RewardDistributionInfo: React.FC = () => {
           </Grid>
 
           {/* Maintainer */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <Typography variant="h6" sx={{ mr: 1 }}>
                 Maintainer: {rewardDistribution.MAINTAINER}%
@@ -51,7 +51,7 @@ const RewardDistributionInfo: React.FC = () => {
           </Grid>
 
           {/* Mentors */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <Typography variant="h6" sx={{ mr: 1 }}>
                 Mentors: {rewardDistribution.MENTORS}%
@@ -67,7 +67,7 @@ const RewardDistributionInfo: React.FC = () => {
           </Grid>
 
           {/* Operations */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <Typography variant="h6" sx={{ mr: 1 }}>
                 Operations: {rewardDistribution.OPERATIONS}%

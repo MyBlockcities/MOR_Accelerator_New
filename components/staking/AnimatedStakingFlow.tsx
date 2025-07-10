@@ -335,7 +335,7 @@ const AnimatedStakingFlow: React.FC<AnimatedStakingFlowProps> = ({ onStake, maxA
                   border: `1px solid ${theme.palette.divider}`
                 }}>
                   <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                    <Grid size={6}>
                       <Typography variant="body2" color="text.secondary">
                         Amount to Stake:
                       </Typography>
@@ -343,7 +343,7 @@ const AnimatedStakingFlow: React.FC<AnimatedStakingFlowProps> = ({ onStake, maxA
                         {amount} MOR
                       </Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={6}>
                       <Typography variant="body2" color="text.secondary">
                         Lock Duration:
                       </Typography>
@@ -351,7 +351,7 @@ const AnimatedStakingFlow: React.FC<AnimatedStakingFlowProps> = ({ onStake, maxA
                         {formatDuration(duration)}
                       </Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={6}>
                       <Typography variant="body2" color="text.secondary">
                         Power Factor:
                       </Typography>
@@ -359,7 +359,7 @@ const AnimatedStakingFlow: React.FC<AnimatedStakingFlowProps> = ({ onStake, maxA
                         {powerFactor.toFixed(2)}x
                       </Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={6}>
                       <Typography variant="body2" color="text.secondary">
                         Virtual Amount:
                       </Typography>

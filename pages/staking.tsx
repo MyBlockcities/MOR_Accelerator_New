@@ -4,20 +4,20 @@ import StakingForm from '../components/staking/StakingForm';
 import StakingDashboard from '../components/staking/StakingDashboard';
 import RewardDistributionDashboard from '../components/staking/RewardDistributionDashboard';
 import PowerFactorInfo from '../components/staking/PowerFactorInfo';
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi';
+import { useAccount, useChainId, useSwitchChain } from 'wagmi';
 import { STAKING_NETWORKS } from '../contracts/config/stakingConfig';
 
 const StakingPage: React.FC = () => {
   const { address, isConnected } = useAccount();
-  const { chain } = useNetwork();
-  const { switchNetwork } = useSwitchNetwork();
+  const chainId = useChainId();
+  const { switchChain } = useSwitchChain();
   
   // Default pool ID - in a real implementation, this would be fetched or selected by the user
   const poolId = '0x1234567890123456789012345678901234567890123456789012345678901234' as `0x${string}`;
   
   // Check if current network is supported
-  const isNetworkSupported = chain && 
-    (chain.id === STAKING_NETWORKS.ARBITRUM.chainId || chain.id === STAKING_NETWORKS.BASE.chainId);
+  const isNetworkSupported = chainId && 
+    (chainId === STAKING_NETWORKS.ARBITRUM.chainId || chainId === STAKING_NETWORKS.BASE.chainId);
   
   return (
     <Container maxWidth="lg">
@@ -54,7 +54,7 @@ const StakingPage: React.FC = () => {
               <Button 
                 variant="contained" 
                 color="primary" 
-                onClick={() => switchNetwork?.(STAKING_NETWORKS.ARBITRUM.chainId)}
+                onClick={() => switchChain?.({ chainId: STAKING_NETWORKS.ARBITRUM.chainId })}
                 sx={{ mr: 2 }}
               >
                 Switch to Arbitrum
@@ -62,7 +62,7 @@ const StakingPage: React.FC = () => {
               <Button 
                 variant="contained" 
                 color="secondary" 
-                onClick={() => switchNetwork?.(STAKING_NETWORKS.BASE.chainId)}
+                onClick={() => switchChain?.({ chainId: STAKING_NETWORKS.BASE.chainId })}
               >
                 Switch to Base
               </Button>
@@ -72,15 +72,19 @@ const StakingPage: React.FC = () => {
         
         {isConnected && isNetworkSupported && (
           <Grid container spacing={4}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <StakingForm poolId={poolId} />
             </Grid>
             
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <StakingDashboard poolId={poolId} />
             </Grid>
             
-            <Grid item xs={12}>
+            <Grid size={12}>
+              <PowerFactorInfo />
+            </Grid>
+            
+            <Grid size={12}>
               <RewardDistributionDashboard />
             </Grid>
           </Grid>

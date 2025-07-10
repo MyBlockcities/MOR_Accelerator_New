@@ -110,7 +110,7 @@ const StakingDashboard: React.FC<{ poolId: `0x${string}` }> = ({ poolId }) => {
           </Typography>
           
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary">
                   Staked Amount:
@@ -121,7 +121,7 @@ const StakingDashboard: React.FC<{ poolId: `0x${string}` }> = ({ poolId }) => {
               </Box>
             </Grid>
             
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary">
                   Virtual Staked Amount (with Power Factor):
@@ -132,7 +132,7 @@ const StakingDashboard: React.FC<{ poolId: `0x${string}` }> = ({ poolId }) => {
               </Box>
             </Grid>
             
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary">
                   Pending Rewards:
@@ -143,7 +143,7 @@ const StakingDashboard: React.FC<{ poolId: `0x${string}` }> = ({ poolId }) => {
               </Box>
             </Grid>
             
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary">
                   Lock Status:

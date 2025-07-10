@@ -9,9 +9,10 @@ import {
 } from 'viem';
 import { NETWORK_CONFIG } from '../config/networks';
 import { BUILDER_ABI } from '../contracts/abis/MorpheusBuilder';
-import { TREASURY_ABI } from '../contracts/abis/MorpheusTreasury';
-import { FEE_CONFIG_ABI } from '../contracts/abis/FeeConfig';
-import { FEATURE_MARKET_ABI } from '../contracts/abis/FeatureMarket';
+// TODO: Re-enable when ABIs are available
+// import { TREASURY_ABI } from '../contracts/abis/MorpheusTreasury';
+// import { FEE_CONFIG_ABI } from '../contracts/abis/FeeConfig';
+// import { FEATURE_MARKET_ABI } from '../contracts/abis/FeatureMarket';
 
 /**
  * Centralized service for blockchain interactions using viem/wagmi
@@ -50,11 +51,8 @@ export class BlockchainService {
    */
   getTreasuryContract(chainId: number) {
     const network = this.getNetworkByChainId(chainId);
-    return getContract({
-      address: network.contracts.treasury as Address,
-      abi: TREASURY_ABI,
-      client: this.publicClient
-    });
+    // TODO: Import TREASURY_ABI when available
+    throw new Error('Treasury contract not available - ABI missing');
   }
 
   /**
@@ -62,11 +60,8 @@ export class BlockchainService {
    */
   getFeeConfigContract(chainId: number) {
     const network = this.getNetworkByChainId(chainId);
-    return getContract({
-      address: network.contracts.feeConfig as Address,
-      abi: FEE_CONFIG_ABI,
-      client: this.publicClient
-    });
+    // TODO: Import FEE_CONFIG_ABI when available
+    throw new Error('Fee config contract not available - ABI missing');
   }
 
   /**
@@ -78,11 +73,8 @@ export class BlockchainService {
       throw new Error(`Feature market address not found for chain ID ${chainId}`);
     }
     
-    return getContract({
-      address: featureMarketAddress as Address,
-      abi: FEATURE_MARKET_ABI,
-      client: this.publicClient
-    });
+    // TODO: Import FEATURE_MARKET_ABI when available
+    throw new Error('Feature market contract not available - ABI missing');
   }
 
   /**
@@ -224,27 +216,8 @@ export class BlockchainService {
       throw new Error('Wallet client not initialized');
     }
 
-    const contract = this.getFeatureMarketContract(chainId);
-    const { request } = await contract.simulate.createProposal([
-      title,
-      description,
-      budget,
-      BigInt(deadline),
-      stakeAmount,
-      BigInt(milestones)
-    ], {
-      account: this.walletClient.account as any
-    });
-
-    // Add account to the request to fix TypeScript errors
-    if (!this.walletClient.account) {
-      throw new Error('Wallet account not initialized');
-    }
-    
-    return this.walletClient.writeContract({
-      ...request,
-      account: this.walletClient.account
-    });
+    // TODO: Re-enable when feature market contract is available
+    throw new Error('Feature market contract not available');
   }
 
   /**
@@ -262,26 +235,8 @@ export class BlockchainService {
       throw new Error('Wallet client not initialized');
     }
 
-    const contract = this.getFeatureMarketContract(chainId);
-    const { request } = await contract.simulate.submitBid([
-      proposalId,
-      amount,
-      BigInt(timeEstimate),
-      proposal
-    ], {
-      account: this.walletClient.account as any,
-      value: stakeAmount
-    });
-
-    // Add account to the request to fix TypeScript errors
-    if (!this.walletClient.account) {
-      throw new Error('Wallet account not initialized');
-    }
-    
-    return this.walletClient.writeContract({
-      ...request,
-      account: this.walletClient.account
-    });
+    // TODO: Re-enable when feature market contract is available
+    throw new Error('Feature market contract not available');
   }
 
   // Private helper methods
@@ -313,70 +268,24 @@ export class BlockchainService {
    * Get all proposals from the feature market
    */
   async getAllProposals(chainId: number): Promise<any[]> {
-    const contract = this.getFeatureMarketContract(chainId);
-    
-    try {
-      const totalProposals = await contract.read.getTotalProposals();
-      const proposalPromises = [];
-      
-      for (let i = 0; i < Number(totalProposals); i++) {
-        proposalPromises.push(this.getProposal(chainId, i.toString()));
-      }
-      
-      return await Promise.all(proposalPromises);
-    } catch (error) {
-      console.error('Error fetching proposals:', error);
-      throw error;
-    }
+    // TODO: Re-enable when feature market contract is available
+    throw new Error('Feature market contract not available');
   }
   
   /**
    * Get a specific proposal by ID
    */
   async getProposal(chainId: number, proposalId: string): Promise<any> {
-    const contract = this.getFeatureMarketContract(chainId);
-    
-    try {
-      const proposal = await contract.read.getProposal([BigInt(proposalId)]);
-      
-      // Format the proposal data
-      return {
-        id: proposalId,
-        title: proposal.title,
-        description: proposal.description,
-        budget: proposal.budget,
-        deadline: proposal.deadline,
-        stakeAmount: proposal.stakeAmount,
-        milestones: proposal.milestones,
-        status: proposal.status,
-        creator: proposal.creator
-      };
-    } catch (error) {
-      console.error(`Error fetching proposal ${proposalId}:`, error);
-      throw error;
-    }
+    // TODO: Re-enable when feature market contract is available
+    throw new Error('Feature market contract not available');
   }
   
   /**
    * Get bids for a specific proposal
    */
   async getBidsForProposal(chainId: number, proposalId: string): Promise<any[]> {
-    const contract = this.getFeatureMarketContract(chainId);
-    
-    try {
-      const bids = await contract.read.getBidsForProposal([BigInt(proposalId)]);
-      
-      // Format the bids data
-      return bids.map((bid: any) => ({
-        bidder: bid.bidder,
-        amount: bid.amount,
-        timeEstimate: bid.timeEstimate,
-        proposal: bid.proposal
-      }));
-    } catch (error) {
-      console.error(`Error fetching bids for proposal ${proposalId}:`, error);
-      throw error;
-    }
+    // TODO: Re-enable when feature market contract is available
+    throw new Error('Feature market contract not available');
   }
   
   /**
@@ -387,23 +296,8 @@ export class BlockchainService {
       throw new Error('Wallet client not initialized');
     }
     
-    const contract = this.getFeatureMarketContract(chainId);
-    const { request } = await contract.simulate.acceptBid([
-      BigInt(proposalId),
-      bidderAddress as Address
-    ], {
-      account: this.walletClient.account as any
-    });
-    
-    // Add account to the request to fix TypeScript errors
-    if (!this.walletClient.account) {
-      throw new Error('Wallet account not initialized');
-    }
-    
-    return this.walletClient.writeContract({
-      ...request,
-      account: this.walletClient.account
-    });
+    // TODO: Re-enable when feature market contract is available
+    throw new Error('Feature market contract not available');
   }
   
   /**
@@ -414,73 +308,24 @@ export class BlockchainService {
       throw new Error('Wallet client not initialized');
     }
     
-    const contract = this.getFeatureMarketContract(chainId);
-    const { request } = await contract.simulate.completeMilestone([
-      BigInt(proposalId),
-      BigInt(milestoneId)
-    ], {
-      account: this.walletClient.account as any
-    });
-    
-    // Add account to the request to fix TypeScript errors
-    if (!this.walletClient.account) {
-      throw new Error('Wallet account not initialized');
-    }
-    
-    return this.walletClient.writeContract({
-      ...request,
-      account: this.walletClient.account
-    });
+    // TODO: Re-enable when feature market contract is available
+    throw new Error('Feature market contract not available');
   }
   
   /**
    * Get builder information
    */
   async getBuilderInfo(chainId: number, builderId: string, userAddress?: string): Promise<any> {
-    const contract = this.getBuilderContract(chainId);
-    
-    try {
-      // Get builder details
-      const builderDetails = await contract.read.getBuilderDetails([builderId as Address]);
-      
-      // Get staking information if user address is provided
-      let userStake = BigInt(0);
-      if (userAddress) {
-        userStake = await contract.read.getStake([builderId as Address, userAddress as Address]);
-      }
-      
-      // Get total staked amount
-      const totalStaked = await contract.read.getTotalStaked([builderId as Address]);
-      
-      // Format and return the data
-      return {
-        name: builderDetails[0],
-        owner: builderDetails[1],
-        lockPeriod: Number(builderDetails[2]),
-        rewardSplit: Number(builderDetails[3]),
-        totalStaked: formatEther(totalStaked),
-        userStake: formatEther(userStake),
-        builderId
-      };
-    } catch (error) {
-      console.error('Error fetching builder info:', error);
-      throw error;
-    }
+    // TODO: Re-enable when proper builder contract methods are available
+    throw new Error('Builder contract read methods not available');
   }
 
   /**
    * Get builder rewards
    */
   async getBuilderRewards(chainId: number, builderId: string, userAddress: string): Promise<string> {
-    const contract = this.getBuilderContract(chainId);
-    
-    try {
-      const rewards = await contract.read.getRewards([builderId as Address, userAddress as Address]);
-      return formatEther(rewards);
-    } catch (error) {
-      console.error('Error fetching builder rewards:', error);
-      throw error;
-    }
+    // TODO: Re-enable when proper builder contract methods are available
+    throw new Error('Builder contract read methods not available');
   }
 }
 

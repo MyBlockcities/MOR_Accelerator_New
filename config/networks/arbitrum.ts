@@ -8,7 +8,10 @@ export const arbitrumConfig: NetworkConfig = {
     contracts: {
         builder: '0xC0eD68f163d44B6e9985F0041fDf6f67c6BCFF3f',
         treasury: '0xCBE3d2c3AdE62cf7aa396e8cA93D2A8bff96E257',
-        feeConfig: '0xc03d87085E254695754a74D2CF76579e167Eb895'
+        feeConfig: '0xc03d87085E254695754a74D2CF76579e167Eb895',
+        distribution: '0x47176B2Af9885dC6C4575d4eFd63895f7Aaa4790', // Main L1 Distribution
+        l2TokenReceiver: '0x47176b2af9885dc6c4575d4efd63895f7aaa4790',
+        l2MessageReceiver: '0xd4a8ECcBe696295e68572A98b1aA70Aa9277d427'
     },
     params: {
         editPoolDeadline: 86400, // 24 hours

@@ -10,7 +10,8 @@ import { useMORToken } from '../hooks/useMORToken';
 
 const Register: NextPage = () => {
   const { isConnected, address } = useAccount();
-  const { formattedBalance, approve, loading: tokenLoading } = useMORToken();
+  const { approve } = useMORToken();
+  // TODO: Add formattedBalance and loading when implemented in useMORToken hook
   
   // Form state
   const [projectName, setProjectName] = useState('');
@@ -134,17 +135,13 @@ const Register: NextPage = () => {
                 <button
                   type="submit"
                   className="w-full px-8 py-3 bg-[#00FF84] text-gray-900 rounded-lg font-semibold hover-glow transition-all"
-                  disabled={isLoading || tokenLoading}
+                  disabled={isLoading}
                 >
                   Register Project
                 </button>
                 </form>
                 
-                {formattedBalance && (
-                  <div className="mt-4 text-sm text-gray-300">
-                    Your MOR Balance: {formattedBalance} MOR
-                  </div>
-                )}
+                {/* TODO: Show MOR balance when implemented in useMORToken hook */}
               </ClientOnly>
             </motion.div>
           )}

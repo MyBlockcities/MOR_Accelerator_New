@@ -21,7 +21,7 @@ const PoolDetailPage = () => {
   const { id } = router.query;
   const chainId = useChainId();
   const { address, isConnected } = useAccount();
-  const { contract, getPool, getStakerAmount, getPendingRewards, getLockEndTime } = useBuilderContract(chainId);
+  const { contract, getBuilderPool, getStakingInfo } = useBuilderContract(chainId);
   
   const [pool, setPool] = useState<BuilderPool | null>(null);
   const [participants, setParticipants] = useState<PoolParticipant[]>([]);
@@ -34,7 +34,7 @@ const PoolDetailPage = () => {
     const loadPoolData = async () => {
       try {
         setIsLoading(true);
-        const poolData = await getPool(id as `0x${string}`);
+        const poolData = await getBuilderPool(id as `0x${string}`);
         setPool(poolData);
 
         // TODO: Implement participant list fetching
@@ -51,7 +51,7 @@ const PoolDetailPage = () => {
     };
 
     loadPoolData();
-  }, [id, contract, getPool]);
+  }, [id, contract, getBuilderPool]);
 
   if (isLoading) return <LoadingState message="Loading pool details..." />;
   if (error) return <div className="text-red-500">{error}</div>;

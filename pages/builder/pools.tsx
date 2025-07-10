@@ -1,5 +1,5 @@
 import React from 'react';
-import PoolManagement from '../../components/builder/PoolManagement';
+import PoolManagement from '../../components/Builder/PoolManagement';
 
 const BuilderPoolsPage = () => {
   return <PoolManagement />;

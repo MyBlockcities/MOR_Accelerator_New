@@ -12,6 +12,13 @@ const nextConfig = {
         'socket.io-client': 'socket.io-client',
       });
     }
+    
+    // Exclude hardhat config from the build
+    config.module.rules.push({
+      test: /hardhat\.config\.(js|ts)$/,
+      use: 'ignore-loader',
+    });
+    
     return config;
   },
   // Add support for WebSocket upgrade

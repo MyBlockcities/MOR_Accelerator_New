@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { parseEther } from 'viem';
-import { useContractService } from '../../hooks/useContractService';
+import { useMorpheusStaking } from '../../hooks/useMorpheusStaking';
 import { useChainId } from 'wagmi';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -25,7 +25,7 @@ const REWARD_SPLIT_OPTIONS = [
 
 export const BuilderRegistration: React.FC = () => {
     const chainId = useChainId();
-    const contractService = useContractService();
+    const { createBuilderPool, isLoading: stakingLoading, isStakingSupported, networkName } = useMorpheusStaking();
 
     const [formData, setFormData] = useState<BuilderRegistrationFormData>({
         name: '',
@@ -43,38 +43,46 @@ export const BuilderRegistration: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!chainId || !contractService) return;
+        if (!chainId || !isStakingSupported) {
+            toast.error('Builder pool creation not supported on this network', {
+                position: "top-right",
+                autoClose: 5000,
+            });
+            return;
+        }
 
         try {
             setIsLoading(true);
-            const initialStakeWei = parseEther(formData.initialStake);
             
-            const tx = await contractService.createBuilderPool(
-                chainId,
-                formData.name,
-                initialStakeWei,
-                formData.lockPeriod
-            );
+            const initialStakeWei = parseEther(formData.initialStake);
+            // Set claim lock end to 30 days from now (placeholder)
+            const claimLockEnd = BigInt(Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60));
+            
+            const txHash = await createBuilderPool(formData.name, initialStakeWei, claimLockEnd);
 
-            toast.info('Your builder pool is being created...', {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-            });
+            if (txHash) {
+                toast.info('Your builder pool is being created...', {
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                });
 
-            // Transaction hash is returned, no need to wait
+                toast.success(`Builder pool "${formData.name}" created successfully!`, {
+                    position: "top-right",
+                    autoClose: 5000,
+                });
 
-            toast.success('Your builder pool has been created!', {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-            });
+                // Reset form after successful creation
+                setFormData({
+                    name: '',
+                    initialStake: '',
+                    lockPeriod: 0,
+                    rewardSplit: 70
+                });
+            }
 
             // Reset form
             setFormData({

@@ -3,8 +3,6 @@ import { useAccount, useChainId, usePublicClient, useWalletClient } from 'wagmi'
 import { ToastContainer, toast } from 'react-toastify';
 // TODO: Re-enable when services folder is fixed
 // import { createContractService } from '../../services/ModernContractService';
-import { Contract } from 'ethers';
-import { useEthersSigner } from '../../utils/ethersAdapters';
 import 'react-toastify/dist/ReactToastify.css';
 
 const DeveloperRegistration: React.FC = () => {

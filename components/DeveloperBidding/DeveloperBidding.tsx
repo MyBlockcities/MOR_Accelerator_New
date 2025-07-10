@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ethers } from 'ethers';
+// Note: Migrated from ethers to wagmi v2/viem
 import { usePublicClient, useWalletClient } from 'wagmi';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

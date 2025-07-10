@@ -23,7 +23,6 @@ export interface NetworkContract {
 
 export interface NetworkAddresses {
     builder: Address;
-    builderAbi: string;
     treasury: Address;
     feeConfig: Address;
 }

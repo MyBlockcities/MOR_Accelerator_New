@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
-import { ethers, formatEther } from 'ethers';
+import { formatEther } from 'viem';
 import {
   Box,
   Text,
@@ -30,32 +30,28 @@ const ProposalList = () => {
     if (!address) return;
 
     try {
-      const contract = new ethers.Contract(
-        process.env.NEXT_PUBLIC_FEATURE_MARKET_ADDRESS!,
-        [], // FeatureSponsorshipMarket.abi - temporarily disabled
-        // TODO: Replace with wagmi v2 signer
-        null
-      );
+      // Note: Using mock data during wagmi v2 migration
+      // TODO: Implement real contract integration with viem
+      // const contract = getContract({
+      //   address: process.env.NEXT_PUBLIC_FEATURE_MARKET_ADDRESS as `0x${string}`,
+      //   abi: [], // FeatureSponsorshipMarket.abi
+      //   client: publicClient
+      // });
 
-      const totalProposals = await contract.getTotalProposals();
-      const proposalPromises = [];
-
-      for (let i = 0; i < totalProposals.toNumber(); i++) {
-        proposalPromises.push(contract.getProposal(i));
-      }
-
-      const proposalData = await Promise.all(proposalPromises);
-      const formattedProposals = proposalData.map((proposal, index) => ({
-        id: index.toString(),
-        title: proposal.title,
-        description: proposal.description,
-        budget: formatEther(proposal.budget),
-        deadline: proposal.deadline.toNumber(),
-        stakeAmount: formatEther(proposal.stakeAmount),
-        milestones: proposal.milestones.toNumber(),
-        status: proposal.status,
-        creator: proposal.creator,
-      }));
+      // Using mock data during wagmi v2 migration
+      const formattedProposals = [
+        {
+          id: '1',
+          title: 'Sample Proposal',
+          description: 'This is a placeholder proposal during wagmi v2 migration',
+          budget: '1000.0',
+          deadline: Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60), // 30 days from now
+          stakeAmount: '100.0',
+          milestones: 3,
+          status: 'active',
+          creator: '0x1234567890123456789012345678901234567890',
+        }
+      ];
 
       setProposals(formattedProposals);
     } catch (error) {

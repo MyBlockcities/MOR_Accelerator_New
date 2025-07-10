@@ -23,7 +23,13 @@
     "deploy:dev-registry:arbitrum": "hardhat run scripts/deploy-hardhat.js --network arbitrum",
     "deploy:dev-registry:arbitrum-sepolia": "hardhat run scripts/deploy-hardhat.js --network arbitrum-sepolia",
     "deploy:dev-registry:base": "hardhat run scripts/deploy-hardhat.js --network base",
-    "deploy:dev-registry:base-sepolia": "hardhat run scripts/deploy-hardhat.js --network base-sepolia"
+    "deploy:dev-registry:base-sepolia": "hardhat run scripts/deploy-hardhat.js --network base-sepolia",
+    "deploy:secure": "node scripts/secure-deploy.js",
+    "deploy:secure:arbitrum": "HARDHAT_NETWORK=arbitrum node scripts/secure-deploy.js",
+    "deploy:secure:base": "HARDHAT_NETWORK=base node scripts/secure-deploy.js",
+    "deploy:secure:test": "HARDHAT_NETWORK=arbitrum-sepolia node scripts/secure-deploy.js",
+    "validate:env": "node -e \"require('./scripts/secure-deploy.js').validateEnvironment()\"",
+    "check:security": "node scripts/check-security.js"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.1.1",
@@ -48,7 +54,6 @@
     "chart.js": "^4.5.0",
     "date-fns": "^3.3.1",
     "dotenv": "^16.4.7",
-    "ethers": "^6.11.1",
     "firebase": "^10.8.0",
     "firebase-admin": "^12.0.0",
     "framer-motion": "^11.18.2",
@@ -71,7 +76,7 @@
     "three": "^0.174.0",
     "viem": "^2.0.0",
     "wagmi": "^2.0.0",
-    "zod": "^3.22.4"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",

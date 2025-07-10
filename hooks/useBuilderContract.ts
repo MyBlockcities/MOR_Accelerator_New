@@ -72,10 +72,11 @@ export function useBuilderContract(providedChainId?: number) {
     );
 
     const claimRewards = useCallback(
-        async (poolId: `0x${string}`): Promise<Hash> => {
+        async (poolId: `0x${string}`, receiver: `0x${string}`): Promise<Hash> => {
             if (!contract || !walletClient) throw new Error('Contract not initialized');
             
-            const { request } = await contract.simulate.claimRewards([poolId]);
+            // Real Morpheus Builders contract claim function signature
+            const { request } = await contract.simulate.claim([poolId, receiver]);
             return walletClient.writeContract(request);
         },
         [contract, walletClient]
@@ -85,23 +86,13 @@ export function useBuilderContract(providedChainId?: number) {
         async (poolId: `0x${string}`): Promise<BuilderPool> => {
             if (!contract) throw new Error('Contract not initialized');
             
-            // TODO: Fix contract.read interface for wagmi v2
-            // Temporarily return mock data until contract interface is fixed
-            console.warn('getBuilderPool: Using mock data - contract.read interface needs fixing');
-            
-            return {
-                id: poolId,
-                name: 'Mock Builder Pool',
-                totalStaked: BigInt('1000000000000000000000'),
-                isActive: true,
-                owner: contract.address as Address,
-                createdAt: Math.floor(Date.now() / 1000),
-                participants: 0,
-                maxParticipants: 100,
-                rewardSplit: BigInt(7000), // 70%
-                lockPeriod: BigInt(0), // No lock
-                lastRewardClaim: BigInt(0)
-            } as BuilderPool;
+            // Use real contract methods with proper error handling
+            try {
+                // Note: These methods need to be verified against actual Builder contract ABI
+                throw new Error('getBuilderPool: Method not implemented - contract ABI needs verification with official Morpheus Builder contract');
+            } catch (error) {
+                throw new Error(`Failed to get builder pool: ${error}`);
+            }
         },
         [contract]
     );
@@ -110,107 +101,61 @@ export function useBuilderContract(providedChainId?: number) {
         async (poolId: `0x${string}`, address: Address): Promise<StakingInfo> => {
             if (!contract) throw new Error('Contract not initialized');
             
-            // TODO: Fix contract.read interface for wagmi v2
-            // Temporarily return mock data until contract interface is fixed
-            console.warn('getStakingInfo: Using mock data - contract.read interface needs fixing');
-            
-            return {
-                amount: BigInt('500000000000000000000'), // 500 MOR
-                lockEndTime: BigInt(0), // No lock
-                pendingRewards: BigInt('10000000000000000000') // 10 MOR
-            };
+            try {
+                // Use actual contract read methods when ABI is verified
+                throw new Error('getStakingInfo: Method not implemented - contract ABI needs verification with official Morpheus Builder contract');
+            } catch (error) {
+                throw new Error(`Failed to get staking info: ${error}`);
+            }
         },
         [contract]
     );
 
-    // Mock implementation for testing/demo purposes
+    // Real contract methods - to be implemented when ABI is verified
     const getTotalDistributedRewards = useCallback(
         async (): Promise<bigint> => {
-            return BigInt('1000000000000000000000'); // 1000 tokens in wei
+            throw new Error('getTotalDistributedRewards: Method not implemented - contract ABI needs verification');
         },
         []
     );
 
     const getTotalPendingRewards = useCallback(
         async (): Promise<bigint> => {
-            return BigInt('500000000000000000000'); // 500 tokens in wei
+            throw new Error('getTotalPendingRewards: Method not implemented - contract ABI needs verification');
         },
         []
     );
 
     const getUserClaimedRewards = useCallback(
         async (userAddress: Address): Promise<bigint> => {
-            return BigInt('100000000000000000000'); // 100 tokens in wei
+            throw new Error('getUserClaimedRewards: Method not implemented - contract ABI needs verification');
         },
         []
     );
 
     const queryFilter = useCallback(
         async (filter: any, blockRange: number) => {
-            // Mock implementation that returns recent claims
-            return [{
-                args: {
-                    amount: BigInt('50000000000000000000'), // 50 tokens
-                    timestamp: BigInt(Math.floor(Date.now() / 1000) - 86400),
-                },
-                transactionHash: '0x1234567890123456789012345678901234567890123456789012345678901234'
-            }];
+            throw new Error('queryFilter: Method not implemented - contract ABI needs verification');
         },
         []
     );
 
-    // Mock for filters object
+    // Real filters object - to be implemented when ABI is verified
     const filters = {
-        RewardsClaimed: (address: Address) => ({ address })
+        RewardsClaimed: (address: Address) => {
+            throw new Error('RewardsClaimed filter: Not implemented - contract ABI needs verification');
+        }
     };
 
     return {
-        contract: {
-            ...contract,
-            address: contract?.address || ('0x0000000000000000000000000000000000000000' as Address),
-            abi: BUILDER_ABI,
-            read: {
-                getStakerAmount: async ([poolId, address]: readonly [`0x${string}`, Address]) => BigInt('1000000000000000000000'),
-                getPendingRewards: async ([poolId, address]: readonly [`0x${string}`, Address]) => BigInt('50000000000000000000'),
-                isLocked: async ([poolId, address]: readonly [`0x${string}`, Address]) => false,
-                getLockEndTime: async ([poolId, address]: readonly [`0x${string}`, Address]) => BigInt(0),
-                getPoolLimits: async ([poolId]: readonly [`0x${string}`]) => ({
-                    minStake: BigInt('1000000000000000000'),
-                    maxStake: BigInt('1000000000000000000000'),
-                    maxParticipants: 100
-                }),
-                getTotalStaked: async () => BigInt('5000000000000000000000'),
-                getTotalStakers: async () => ({ toNumber: () => 25 }),
-                getAverageLockTime: async () => ({ toNumber: () => 30 * 24 * 60 * 60 }),
-                getStake: async (address: Address) => ({ toString: () => '1000000000000000000000' }),
-                getBuilderPool: async ([poolId]: readonly [`0x${string}`]) => ({
-                    id: poolId,
-                    name: 'Mock Builder Pool',
-                    owner: '0x0000000000000000000000000000000000000000' as Address,
-                    initialStake: BigInt('1000000000000000000000'),
-                    minStake: BigInt('1000000000000000000'),
-                    maxStake: BigInt('1000000000000000000000'),
-                    rewardRate: BigInt('100'),
-                    totalStaked: BigInt('5000000000000000000000'),
-                    stakersCount: 25,
-                    lockPeriod: 30 * 24 * 60 * 60,
-                    isActive: true
-                })
-            },
-            write: {
-                stake: async ([poolId, amount]: readonly [`0x${string}`, bigint]) => '0x' as Hash,
-                unstake: async ([poolId, amount]: readonly [`0x${string}`, bigint]) => '0x' as Hash,
-                claimRewards: async ([poolId]: readonly [`0x${string}`]) => '0x' as Hash
-            },
-            estimateGas: { createBuilderPool, stake, unstake, claimRewards }
-        },
+        contract,
         createBuilderPool,
         stake,
         unstake,
         claimRewards,
         getBuilderPool,
         getStakingInfo,
-        // Mock methods for rewards page
+        // Contract method implementations - require ABI verification
         getTotalDistributedRewards,
         getTotalPendingRewards,
         getUserClaimedRewards,

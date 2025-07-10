@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { ethers, formatEther } from 'ethers';
-import { useEthersProvider } from '../../utils/ethersAdapters';
+import { formatEther } from 'viem';
+import { usePublicClient } from 'wagmi';
 
 interface FeatureRequest {
   id: number;
@@ -13,7 +13,7 @@ interface FeatureRequest {
 
 const FeatureList: React.FC = () => {
   const [features, setFeatures] = useState<FeatureRequest[]>([]);
-  const provider = useEthersProvider();
+  const publicClient = usePublicClient();
 
   useEffect(() => {
     fetchFeatures();
@@ -25,22 +25,25 @@ const FeatureList: React.FC = () => {
       const contractAddress = 'YOUR_CONTRACT_ADDRESS';
       const contractABI: any[] = []; // Add your contract ABI here
 
-      const contract = new ethers.Contract(contractAddress, contractABI, provider);
+      // Note: Convert to use viem getContract pattern when implementing
+      // const contract = getContract({
+      //   address: contractAddress,
+      //   abi: contractABI,
+      //   client: publicClient
+      // });
 
-      const featureCount = await contract.getFeatureCount();
-      const fetchedFeatures = [];
-
-      for (let i = 0; i < featureCount; i++) {
-        const feature = await contract.getFeature(i);
-        fetchedFeatures.push({
-          id: i,
-          title: feature.title,
-          description: feature.description,
-          morAmount: formatEther(feature.morAmount),
-          milestones: feature.milestones.toNumber(),
-          status: feature.status,
-        });
-      }
+      // Note: Using mock data during wagmi v2 migration
+      // TODO: Implement real contract integration with viem
+      const fetchedFeatures = [
+        {
+          id: 1,
+          title: 'Sample Feature Request',
+          description: 'This is a placeholder feature request during migration',
+          morAmount: '100.0',
+          milestones: 3,
+          status: 'active',
+        }
+      ];
 
       setFeatures(fetchedFeatures);
     } catch (error) {

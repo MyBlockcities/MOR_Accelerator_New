@@ -23,7 +23,7 @@ export function RewardsTracker() {
     const [rewards, setRewards] = useState<RewardInfo[]>([]);
     const [selectedPool, setSelectedPool] = useState<`0x${string}` | null>(null);
 
-    const { contract: builderContract } = useBuilderContract(chainId || SUPPORTED_CHAINS.ARBITRUM);
+    const { contract: builderContract, claimRewards: claimRewardsFunction } = useBuilderContract(chainId || SUPPORTED_CHAINS.ARBITRUM);
     const { contract: treasuryContract } = useTreasuryContract(chainId || SUPPORTED_CHAINS.ARBITRUM);
 
     const loadRewards = useCallback(async () => {
@@ -89,7 +89,9 @@ export function RewardsTracker() {
 
         try {
             setIsLoading(true);
-            const hash = await builderContract.write.claimRewards([poolId]);
+            // Use the claimRewards function from useBuilderContract hook
+            // Real Morpheus Builders contract expects: claim(bytes32 poolId, address receiver)
+            const hash = await claimRewardsFunction(poolId, address);
 
             const receipt = await publicClient.waitForTransactionReceipt({ hash });
             

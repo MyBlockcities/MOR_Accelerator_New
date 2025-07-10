@@ -309,7 +309,8 @@ export class MorpheusStakingService {
     async createBuilderPool(
         name: string,
         initialDeposit: bigint,
-        claimLockEnd: bigint
+        claimLockEnd: bigint,
+        rewardSplit: bigint = BigInt(50) // Default 50% reward split
     ): Promise<Hash> {
         if (!this.walletClient) {
             throw new Error('Wallet client required for transactions');
@@ -318,8 +319,8 @@ export class MorpheusStakingService {
         const txHash = await this.walletClient.writeContract({
             address: this.getBuilderContractAddress(),
             abi: BUILDER_ABI,
-            functionName: 'createPool' as any,
-            args: [name, initialDeposit, claimLockEnd] as any,
+            functionName: 'createBuilderPool',
+            args: [name, initialDeposit, claimLockEnd, rewardSplit],
             chain: undefined,
             account: this.walletClient.account!
         });
@@ -338,8 +339,8 @@ export class MorpheusStakingService {
         const txHash = await this.walletClient.writeContract({
             address: this.getBuilderContractAddress(),
             abi: BUILDER_ABI,
-            functionName: 'deposit' as any,
-            args: [poolId as Hash, amount] as any,
+            functionName: 'stake',
+            args: [poolId as Hash, amount],
             chain: undefined,
             account: this.walletClient.account!
         });
@@ -354,15 +355,15 @@ export class MorpheusStakingService {
         const pool = await this.publicClient.readContract({
             address: this.getBuilderContractAddress(),
             abi: BUILDER_ABI,
-            functionName: 'builderPools' as any,
-            args: [poolId as Hash] as any
+            functionName: 'builderPools',
+            args: [poolId as Hash]
         });
         
         const poolData = await this.publicClient.readContract({
             address: this.getBuilderContractAddress(),
             abi: BUILDER_ABI,
-            functionName: 'buildersPoolData' as any,
-            args: [poolId as Hash] as any
+            functionName: 'buildersPoolData',
+            args: [poolId as Hash]
         });
         
         const poolArray = pool as any[];

@@ -159,6 +159,7 @@ export const RewardsDashboard: React.FC = () => {
                 >
                     <ClaimInterface
                         claimableAmount={stats.claimableRewards}
+                        poolId={'0x1234567890123456789012345678901234567890123456789012345678901234' as `0x${string}`}
                         onClaimSuccess={() => {
                             // Refresh stats after successful claim
                             window.location.reload();

@@ -2,6 +2,7 @@ import { type Address, type PublicClient, type WalletClient, type Hash,
          type GetContractReturnType, getContract, parseEther } from 'viem';
 import { NETWORK_CONFIG } from '../contracts/config/networks';
 import { SUPPORTED_CHAINS } from '../utils/networkSwitching';
+import { LZ_ENDPOINT_ID, LZ_ENDPOINT_ADDRESSES, CHAIN_ID_TO_LZ_ID, LZ_ID_TO_CHAIN_ID } from '../contracts/config/layerzero';
 
 export interface CrossChainMessage {
     srcChainId: number;
@@ -17,16 +18,42 @@ export interface LayerZeroConfig {
 }
 
 export class LayerZeroService {
-    private static readonly LZ_ENDPOINTS: Record<(typeof SUPPORTED_CHAINS)[keyof typeof SUPPORTED_CHAINS], Address> = {
-        [SUPPORTED_CHAINS.ARBITRUM]: '0x3c2269811836af69497E5F486A85D7316753cf62',
-        [SUPPORTED_CHAINS.BASE]: '0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7'
-    } as const;
-
     private static readonly DEFAULT_GAS_LIMIT = 200000n;
     private static readonly DEFAULT_ADAPTER_PARAMS = '0x';
 
-    public static getLZEndpoint(chainId: (typeof SUPPORTED_CHAINS)[keyof typeof SUPPORTED_CHAINS]): Address {
-        return this.LZ_ENDPOINTS[chainId];
+    /**
+     * Get verified LayerZero endpoint address for a given chain ID
+     */
+    public static getLZEndpoint(chainId: number): Address {
+        switch (chainId) {
+            case 1: return LZ_ENDPOINT_ADDRESSES.ethereum;
+            case 42161: return LZ_ENDPOINT_ADDRESSES.arbitrum;  
+            case 8453: return LZ_ENDPOINT_ADDRESSES.base;
+            default:
+                throw new Error(`Unsupported chain ID for LayerZero: ${chainId}`);
+        }
+    }
+
+    /**
+     * Get verified LayerZero endpoint ID for a given chain ID
+     */
+    public static getLZEndpointId(chainId: number): number {
+        const lzId = CHAIN_ID_TO_LZ_ID[chainId];
+        if (!lzId) {
+            throw new Error(`No LayerZero endpoint ID found for chain ${chainId}`);
+        }
+        return lzId;
+    }
+
+    /**
+     * Get chain ID from LayerZero endpoint ID
+     */
+    public static getChainIdFromLZId(lzEndpointId: number): number {
+        const chainId = LZ_ID_TO_CHAIN_ID[lzEndpointId];
+        if (!chainId) {
+            throw new Error(`No chain ID found for LayerZero endpoint ${lzEndpointId}`);
+        }
+        return chainId;
     }
 
     public static async estimateFees(

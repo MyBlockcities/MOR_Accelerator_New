@@ -36,7 +36,8 @@ const transportConfig = {
 const config = createConfig({
   chains: availableChains,
   transports: transportConfig,
-  connectors
+  connectors,
+  ssr: true, // Enable SSR support
 });
 
 const queryClient = new QueryClient({
@@ -49,17 +50,12 @@ const queryClient = new QueryClient({
 });
 
 function MyApp({ Component, pageProps }: AppProps) {
-  // Fix hydration errors by only mounting on client-side
+  // Improved SSR hydration handling
   const [mounted, setMounted] = useState(false);
   
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // Only show UI once mounted to prevent hydration errors
-  if (!mounted) {
-    return null; // Return nothing during SSR
-  }
 
   return (
     <WagmiProvider config={config}>
@@ -74,9 +70,18 @@ function MyApp({ Component, pageProps }: AppProps) {
           }}
         >
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
+            {mounted ? (
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
+            ) : (
+              // Show a minimal layout during SSR/hydration
+              <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900">
+                <div className="flex items-center justify-center min-h-screen">
+                  <div className="animate-pulse text-white text-lg">Loading Morpheus AI...</div>
+                </div>
+              </div>
+            )}
           </ThemeProvider>
         </RainbowKitProvider>
       </QueryClientProvider>

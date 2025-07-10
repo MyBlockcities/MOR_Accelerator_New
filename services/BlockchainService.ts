@@ -185,7 +185,8 @@ export class BlockchainService {
       throw new Error('Wallet account not initialized');
     }
 
-    const { request } = await contract.simulate.claimRewards([builderId as Address], {
+    // Real Morpheus Builders contract expects: claim(bytes32 poolId, address receiver)
+    const { request } = await contract.simulate.claim([builderId as `0x${string}`, this.walletClient.account.address], {
       account: this.walletClient.account.address
     });
 

@@ -1,12 +1,10 @@
 /**
- * Modern Contract Service with wagmi v2 and viem integration
- * This service provides both wagmi/viem and ethers.js compatibility
+ * Modern Contract Service with pure wagmi v2 and viem integration
+ * Fully migrated from ethers.js to viem
  */
 
-import { getContract, type Address, type PublicClient, type WalletClient } from 'viem';
-import { Contract } from 'ethers';
-import { NETWORK_CONFIG, getContractAddress } from '../config/networks';
-import { publicClientToProvider, walletClientToSigner } from '../utils/ethersAdapters';
+import { getContract, type Address, type PublicClient, type WalletClient, type Hash } from 'viem';
+import { NETWORK_CONFIG } from '../contracts/config/networks';
 
 // Import ABIs
 import IMorpheusBuilderABI from '../contracts/abis/IMorpheusBuilder.json';
@@ -28,10 +26,19 @@ export class ModernContractService {
      * Get Builder contract using viem
      */
     getBuilderContract(networkId: number) {
-        const address = getContractAddress(networkId, 'builders') as Address;
+        const networkConfig = this.getNetworkConfig(networkId);
+        if (!networkConfig) {
+            throw new Error(`Network ${networkId} not supported`);
+        }
+        
+        // Use contract addresses from network config
+        const contractAddresses = networkConfig.contracts;
+        if (!contractAddresses?.builder) {
+            throw new Error(`Builder contract not configured for network ${networkId}`);
+        }
         
         return getContract({
-            address,
+            address: contractAddresses.builder as Address,
             abi: IMorpheusBuilderABI,
             client: this.walletClient || this.publicClient,
         });
@@ -41,41 +48,21 @@ export class ModernContractService {
      * Get Treasury contract using viem
      */
     getTreasuryContract(networkId: number) {
-        const address = getContractAddress(networkId, 'treasury') as Address;
+        const networkConfig = this.getNetworkConfig(networkId);
+        if (!networkConfig) {
+            throw new Error(`Network ${networkId} not supported`);
+        }
+        
+        const contractAddresses = networkConfig.contracts;
+        if (!contractAddresses?.treasury) {
+            throw new Error(`Treasury contract not configured for network ${networkId}`);
+        }
         
         return getContract({
-            address,
+            address: contractAddresses.treasury as Address,
             abi: IMorpheusTreasuryABI,
             client: this.walletClient || this.publicClient,
         });
-    }
-
-    /**
-     * Get Builder contract using ethers.js for backward compatibility
-     */
-    async getBuilderContractEthers(networkId: number) {
-        if (!this.walletClient) {
-            throw new Error('Wallet client required for write operations');
-        }
-
-        const address = getContractAddress(networkId, 'builders');
-        const signer = await walletClientToSigner(this.walletClient);
-        
-        return new Contract(address, IMorpheusBuilderABI, signer);
-    }
-
-    /**
-     * Get Treasury contract using ethers.js for backward compatibility
-     */
-    async getTreasuryContractEthers(networkId: number) {
-        if (!this.walletClient) {
-            throw new Error('Wallet client required for write operations');
-        }
-
-        const address = getContractAddress(networkId, 'treasury');
-        const signer = await walletClientToSigner(this.walletClient);
-        
-        return new Contract(address, IMorpheusTreasuryABI, signer);
     }
 
     /**

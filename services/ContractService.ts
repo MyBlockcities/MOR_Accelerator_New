@@ -1,62 +1,166 @@
-import { ethers, Contract, Signer } from 'ethers';
-import type { BigNumber } from '@ethersproject/bignumber';
-import { JsonRpcProvider } from '@ethersproject/providers';
-import { NETWORK_CONFIG, getContractAddress } from '../config/networks';
-import IMorpheusBuilderABI from '../contracts/abis/IMorpheusBuilder.json';
-import IMorpheusTreasuryABI from '../contracts/abis/IMorpheusTreasury.json';
+/**
+ * Pure viem/wagmi v2 Contract Service
+ * No ethers.js dependencies - fully migrated to viem
+ */
+
+import { getContract, type Address, type PublicClient, type WalletClient, type Hash } from 'viem';
+import { BUILDER_ABI, BUILDER_ADDRESSES } from '../contracts/abis/MorpheusBuilder';
+import { TREASURY_ABI, TREASURY_ADDRESSES } from '../contracts/abis/MorpheusTreasury';
+import { NETWORK_CONFIG } from '../contracts/config/networks';
 
 export class ContractService {
-    private provider: JsonRpcProvider;
-    private signer: Signer;
+    private publicClient: PublicClient;
+    private walletClient?: WalletClient;
 
-    constructor(provider: JsonRpcProvider) {
-        this.provider = provider;
-        this.signer = provider.getSigner();
+    constructor(publicClient: PublicClient, walletClient?: WalletClient) {
+        this.publicClient = publicClient;
+        this.walletClient = walletClient;
     }
 
-    async getBuilderContract(networkId: number) {
-        const address = getContractAddress(networkId, 'builders');
-        return new Contract(address, IMorpheusBuilderABI, this.signer);
+    /**
+     * Get Builder contract using viem
+     */
+    getBuilderContract(chainId: number) {
+        const addresses = chainId === 42161 ? BUILDER_ADDRESSES.arbitrum : BUILDER_ADDRESSES.base;
+        
+        return getContract({
+            address: addresses.builder,
+            abi: BUILDER_ABI,
+            client: this.walletClient || this.publicClient,
+        });
     }
 
-    async getTreasuryContract(networkId: number) {
-        const address = getContractAddress(networkId, 'treasury');
-        return new Contract(address, IMorpheusTreasuryABI, this.signer);
+    /**
+     * Get Treasury contract using viem
+     */
+    getTreasuryContract(chainId: number) {
+        const addresses = chainId === 42161 ? TREASURY_ADDRESSES.arbitrum : TREASURY_ADDRESSES.base;
+        
+        return getContract({
+            address: addresses.treasury,
+            abi: TREASURY_ABI,
+            client: this.walletClient || this.publicClient,
+        });
     }
 
+    /**
+     * Create a builder pool
+     */
     async createBuilderPool(
-        networkId: number,
+        chainId: number,
         name: string,
-        initialStake: BigNumber,
-        lockPeriod: number,
-        rewardSplit: number
-    ) {
-        const contract = await this.getBuilderContract(networkId);
-        return contract.createBuilderPool(name, initialStake, lockPeriod, rewardSplit);
+        initialStake: bigint,
+        lockPeriod: bigint,
+        rewardSplit: bigint
+    ): Promise<Hash> {
+        if (!this.walletClient) {
+            throw new Error('Wallet client required for write operations');
+        }
+
+        const contract = this.getBuilderContract(chainId);
+        
+        const { request } = await contract.simulate.createBuilderPool([
+            name,
+            initialStake,
+            lockPeriod,
+            rewardSplit
+        ]);
+        
+        return this.walletClient.writeContract(request);
     }
 
-    async stake(networkId: number, builderId: string, amount: BigNumber) {
-        const contract = await this.getBuilderContract(networkId);
-        return contract.stake(builderId, amount);
+    /**
+     * Stake tokens to a builder pool
+     */
+    async stake(chainId: number, poolId: `0x${string}`, amount: bigint): Promise<Hash> {
+        if (!this.walletClient) {
+            throw new Error('Wallet client required for write operations');
+        }
+
+        const contract = this.getBuilderContract(chainId);
+        
+        const { request } = await contract.simulate.stake([poolId, amount]);
+        
+        return this.walletClient.writeContract(request);
     }
 
-    async unstake(networkId: number, builderId: string, amount: BigNumber) {
-        const contract = await this.getBuilderContract(networkId);
-        return contract.unstake(builderId, amount);
+    /**
+     * Unstake tokens from a builder pool
+     */
+    async unstake(chainId: number, poolId: `0x${string}`, amount: bigint): Promise<Hash> {
+        if (!this.walletClient) {
+            throw new Error('Wallet client required for write operations');
+        }
+
+        const contract = this.getBuilderContract(chainId);
+        
+        const { request } = await contract.simulate.unstake([poolId, amount]);
+        
+        return this.walletClient.writeContract(request);
     }
 
-    async claimRewards(networkId: number, builderId: string) {
-        const contract = await this.getBuilderContract(networkId);
-        return contract.claimRewards(builderId);
+    /**
+     * Claim rewards from a builder pool
+     */
+    async claimRewards(chainId: number, poolId: `0x${string}`, receiver: Address): Promise<Hash> {
+        if (!this.walletClient) {
+            throw new Error('Wallet client required for write operations');
+        }
+
+        const contract = this.getBuilderContract(chainId);
+        
+        // Real Morpheus Builders contract expects: claim(bytes32 poolId, address receiver)
+        const { request } = await contract.simulate.claim([poolId, receiver]);
+        
+        return this.walletClient.writeContract(request);
     }
 
-    async getBuilderInfo(networkId: number, builderId: string) {
-        const contract = await this.getBuilderContract(networkId);
-        return contract.getBuilderInfo(builderId);
+    /**
+     * Get builder pool information
+     */
+    async getBuilderInfo(chainId: number, poolId: `0x${string}`) {
+        const contract = this.getBuilderContract(chainId);
+        
+        // Note: This function needs to be verified against actual Builder contract ABI
+        try {
+            return await contract.read.getBuilderPool([poolId]);
+        } catch (error) {
+            throw new Error(`getBuilderInfo: Function not available in current contract ABI - ${error}`);
+        }
     }
 
-    async getBuilderRewards(networkId: number, builderId: string) {
-        const contract = await this.getTreasuryContract(networkId);
-        return contract.getBuilderRewards(builderId);
+    /**
+     * Get builder rewards from treasury
+     */
+    async getBuilderRewards(chainId: number, poolId: `0x${string}`): Promise<bigint> {
+        const contract = this.getTreasuryContract(chainId);
+        
+        return await contract.read.getBuilderRewards([poolId]);
     }
-} 
+
+    /**
+     * Get network configuration
+     */
+    getNetworkConfig(chainId: number) {
+        return Object.values(NETWORK_CONFIG).find(network => network.chainId === chainId);
+    }
+
+    /**
+     * Check if network is supported
+     */
+    isNetworkSupported(chainId: number): boolean {
+        return this.getNetworkConfig(chainId) !== undefined;
+    }
+}
+
+/**
+ * Factory function to create service with wagmi clients
+ */
+export function createContractService(
+    publicClient: PublicClient,
+    walletClient?: WalletClient
+) {
+    return new ContractService(publicClient, walletClient);
+}
+
+export default ContractService;

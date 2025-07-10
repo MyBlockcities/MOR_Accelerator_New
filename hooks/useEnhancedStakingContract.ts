@@ -83,8 +83,19 @@ export function useEnhancedStakingContract(chainId: number) {
                 // First approve the token transfer
                 const approvalTx = await approve(contract.address as Address, amountBigInt);
                 
-                // Wait for approval to be confirmed
-                // In a production app, you would wait for the transaction to be confirmed
+                // Wait for approval to be confirmed with proper error handling
+                if (!publicClient) {
+                    throw new Error('Public client not available');
+                }
+                
+                const approvalReceipt = await publicClient.waitForTransactionReceipt({ 
+                    hash: approvalTx,
+                    timeout: 60000 // 60 second timeout
+                });
+                
+                if (approvalReceipt.status !== 'success') {
+                    throw new Error('Token approval transaction failed');
+                }
                 
                 // Calculate virtual amount based on lock period
                 const stakingDuration = lockPeriod;
@@ -92,9 +103,19 @@ export function useEnhancedStakingContract(chainId: number) {
                 
                 console.log(`Staking ${amount} MOR with power factor ${powerFactor}x for ${lockPeriod} seconds`);
                 
-                // Call the stake function
+                // Call the stake function with retry logic
                 const { request } = await contract.simulate.stake([poolId, amountBigInt]);
                 const txHash = await walletClient.writeContract(request);
+                
+                // Wait for staking transaction confirmation
+                const stakingReceipt = await publicClient.waitForTransactionReceipt({ 
+                    hash: txHash,
+                    timeout: 60000 // 60 second timeout
+                });
+                
+                if (stakingReceipt.status !== 'success') {
+                    throw new Error('Staking transaction failed - transaction reverted');
+                }
                 
                 return txHash;
             } catch (err) {
@@ -209,13 +230,14 @@ export function useEnhancedStakingContract(chainId: number) {
             }
         },
         claimRewards: async (poolId: `0x${string}`): Promise<Hash | undefined> => {
-            if (!contract || !walletClient) {
-                setError('Contract or wallet not initialized');
+            if (!contract || !walletClient || !address) {
+                setError('Contract, wallet, or address not initialized');
                 return undefined;
             }
             setIsLoading(true);
             setError(null);
             try {
+                // Enhanced staking contract uses claimRewards function
                 const { request } = await contract.simulate.claimRewards([poolId]);
                 return walletClient.writeContract(request);
             } catch (err) {

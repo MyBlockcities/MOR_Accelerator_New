@@ -107,62 +107,46 @@ export function useStakingContract(chainId: number) {
         [contract]
     );
 
+    // NOTE: The following functions are not available in the current staking contract ABI
+    // They should be implemented when the contract supports these methods
+    
     const getPoolLimits = useCallback(
         async (poolId: `0x${string}`): Promise<{
             minStake: bigint;
             maxStake: bigint;
             maxParticipants: number;
         }> => {
-            if (!contract) throw new Error('Contract not initialized');
-            // TODO: Replace with actual contract method when available
-            console.warn('getPoolLimits: Using mock data - contract method not available');
-            return {
-                minStake: BigInt('1000000000000000000'), // 1 ETH
-                maxStake: BigInt('1000000000000000000000'), // 1000 ETH
-                maxParticipants: 100
-            };
+            throw new Error('getPoolLimits: Function not available in current contract - please check with latest Morpheus contract deployment');
         },
-        [contract]
+        []
     );
 
     const getTotalStaked = useCallback(
         async (): Promise<bigint> => {
-            if (!contract) throw new Error('Contract not initialized');
-            // TODO: Replace with actual contract method when available
-            console.warn('getTotalStaked: Using mock data - contract method not available');
-            return BigInt('5000000000000000000000'); // 5000 ETH
+            throw new Error('getTotalStaked: Function not available in current contract - please check with latest Morpheus contract deployment');
         },
-        [contract]
+        []
     );
 
     const getTotalStakers = useCallback(
         async (): Promise<{ toNumber: () => number }> => {
-            if (!contract) throw new Error('Contract not initialized');
-            // TODO: Replace with actual contract method when available
-            console.warn('getTotalStakers: Using mock data - contract method not available');
-            return { toNumber: () => 25 };
+            throw new Error('getTotalStakers: Function not available in current contract - please check with latest Morpheus contract deployment');
         },
-        [contract]
+        []
     );
 
     const getAverageLockTime = useCallback(
         async (): Promise<{ toNumber: () => number }> => {
-            if (!contract) throw new Error('Contract not initialized');
-            // TODO: Replace with actual contract method when available
-            console.warn('getAverageLockTime: Using mock data - contract method not available');
-            return { toNumber: () => 30 * 24 * 60 * 60 }; // 30 days in seconds
+            throw new Error('getAverageLockTime: Function not available in current contract - please check with latest Morpheus contract deployment');
         },
-        [contract]
+        []
     );
 
     const getStake = useCallback(
         async (address: Address): Promise<{ toString: () => string }> => {
-            if (!contract) throw new Error('Contract not initialized');
-            // TODO: Replace with actual contract method when available
-            console.warn('getStake: Using mock data - contract method not available');
-            return { toString: () => '1000000000000000000000' }; // 1000 ETH
+            throw new Error('getStake: Function not available in current contract - use getStakerAmount instead');
         },
-        [contract]
+        []
     );
 
     return {

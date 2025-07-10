@@ -9,41 +9,49 @@ import { GasEstimator } from '../staking/GasEstimator';
 
 interface ClaimInterfaceProps {
     claimableAmount: bigint;
+    poolId: `0x${string}`;  // Added required poolId parameter
     onClaimSuccess?: () => void;
 }
 
 export const ClaimInterface: React.FC<ClaimInterfaceProps> = ({
     claimableAmount,
+    poolId,
     onClaimSuccess
 }) => {
     const { address } = useAccount();
     const chainId = useChainId();
     const publicClient = usePublicClient();
-    const { contract: builderContract } = useBuilderContract(chainId || SUPPORTED_CHAINS.ARBITRUM);
+    const { claimRewards } = useBuilderContract(chainId || SUPPORTED_CHAINS.ARBITRUM);
     
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [txHash, setTxHash] = useState<Hash | null>(null);
 
     const handleClaim = async () => {
-        if (!address || !builderContract) return;
+        if (!address || !claimRewards) return;
 
         try {
             setIsLoading(true);
             setError(null);
 
-            // Execute the claim transaction
-            const tx = await builderContract.write.claimRewards([address as `0x${string}`]);
+            // Execute the claim transaction using the real contract method
+            // Real Morpheus Builders contract expects: claim(bytes32 poolId, address receiver)
+            const tx = await claimRewards(poolId, address);
 
             setTxHash(tx);
             
-            // Wait for transaction confirmation
-            const receipt = await publicClient?.waitForTransactionReceipt({
-                hash: tx,
-            });
-            
-            if (receipt?.status === 'success') {
-                onClaimSuccess?.();
+            // Wait for transaction confirmation with proper error handling
+            if (tx && publicClient) {
+                const receipt = await publicClient.waitForTransactionReceipt({
+                    hash: tx,
+                    timeout: 60000 // 60 second timeout
+                });
+                
+                if (receipt.status === 'success') {
+                    onClaimSuccess?.();
+                } else {
+                    throw new Error('Transaction failed - reverted on chain');
+                }
             }
         } catch (err) {
             console.error('Error claiming rewards:', err);

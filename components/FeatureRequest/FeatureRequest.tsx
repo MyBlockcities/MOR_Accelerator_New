@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ethers, parseEther } from 'ethers';
-import { useEthersProvider, useEthersSigner } from '../../utils/ethersAdapters';
+import { parseEther } from 'viem';
+import { useWalletClient, usePublicClient } from 'wagmi';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -9,34 +9,50 @@ const FeatureRequest = () => {
   const [description, setDescription] = useState('');
   const [morAmount, setMorAmount] = useState('');
   const [milestones, setMilestones] = useState('1');
-  const signer = useEthersSigner();
-  const provider = useEthersProvider();
+  const { data: walletClient } = useWalletClient();
+  const publicClient = usePublicClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      const resolvedSigner = await signer;
-      if (!resolvedSigner) {
+      if (!walletClient) {
         toast.error('Please connect your wallet');
         return;
       }
 
       // Replace with your actual contract address and ABI
-      const contractAddress = 'YOUR_CONTRACT_ADDRESS';
+      const contractAddress = 'YOUR_CONTRACT_ADDRESS' as `0x${string}`;
       const contractABI: any[] = []; // Add your contract ABI here
 
-      const contract = new ethers.Contract(contractAddress, contractABI, resolvedSigner);
+      // Note: This component needs to be updated with actual contract integration
+      // For now, showing the pattern for viem usage with proper transaction handling
+      
+      if (!publicClient) {
+        toast.error('Network not connected');
+        return;
+      }
 
-      const tx = await contract.createFeatureRequest(
-        title,
-        description,
-        parseEther(morAmount),
-        parseInt(milestones)
-      );
+      const txHash = await walletClient.writeContract({
+        address: contractAddress,
+        abi: contractABI,
+        functionName: 'createFeatureRequest',
+        args: [
+          title,
+          description,
+          parseEther(morAmount),
+          BigInt(parseInt(milestones))
+        ],
+      });
 
-      await tx.wait();
-      toast.success('Feature request submitted successfully!');
+      // Wait for transaction confirmation
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      
+      if (receipt.status === 'success') {
+        toast.success('Feature request submitted successfully!');
+      } else {
+        throw new Error('Transaction failed');
+      }
     } catch (error) {
       console.error('Error submitting feature request:', error);
       toast.error('Error submitting feature request');

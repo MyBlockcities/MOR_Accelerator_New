@@ -19,5 +19,5 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "scripts/**/*", "components/CrossChainTransaction.tsx", "components/ImprovedDeveloperRegistration/**/*", "hooks/useCrossChain.ts", "hooks/useContractService.ts", "hooks/useStaking.ts.backup", "services/ContractService.ts", "services/LayerZeroService.ts", "services/ModernContractService.ts", "services/MorpheusStakingService.ts", "hooks/useMorpheusStaking.ts", "src/**/*"]
+  "exclude": ["node_modules", "scripts/**/*", "components/CrossChainTransaction.tsx", "components/ImprovedDeveloperRegistration/**/*", "hooks/useCrossChain.ts", "hooks/useContractService.ts", "hooks/useStaking.ts.backup", "services/ContractService.ts", "services/LayerZeroService.ts", "services/ModernContractService.ts", "src/**/*"]
 }

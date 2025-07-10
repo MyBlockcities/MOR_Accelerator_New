@@ -15,8 +15,10 @@ import {
     Address, 
     parseEther, 
     formatEther,
-    getContract,
-    Hash
+    Hash,
+    createPublicClient,
+    createWalletClient,
+    http
 } from 'viem';
 import { arbitrumConfig } from '../config/networks/arbitrum';
 import { baseConfig } from '../config/networks/base';
@@ -79,85 +81,62 @@ export class MorpheusStakingService {
     }
 
     /**
-     * Get Distribution contract (main staking contract on L1)
+     * Get Distribution contract address
      */
-    private getDistributionContract() {
+    private getDistributionContractAddress(): Address {
         const config = this.getNetworkConfig();
         if (!config?.contracts.distribution) {
             throw new Error('Distribution contract not configured for this network');
         }
-
-        return getContract({
-            address: config.contracts.distribution as Address,
-            abi: DISTRIBUTION_ABI,
-            client: {
-                public: this.publicClient,
-                wallet: this.walletClient,
-            }
-        });
+        return config.contracts.distribution as Address;
     }
 
     /**
-     * Get Builder contract (custom pools on L2)
+     * Get Builder contract address
      */
-    private getBuilderContract() {
+    private getBuilderContractAddress(): Address {
         const config = this.getNetworkConfig();
         if (!config?.contracts.builder) {
             throw new Error('Builder contract not configured for this network');
         }
-
-        return getContract({
-            address: config.contracts.builder as Address,
-            abi: BUILDER_ABI,
-            client: {
-                public: this.publicClient,
-                wallet: this.walletClient,
-            }
-        });
+        return config.contracts.builder as Address;
     }
 
     /**
-     * Get MOR token contract
+     * Get MOR token contract address
      */
-    private getMORTokenContract() {
+    private getMORTokenAddress(): Address {
         const config = this.getNetworkConfig();
         if (!config?.tokens.MOR?.address) {
             throw new Error('MOR token not configured for this network');
         }
-
-        return getContract({
-            address: config.tokens.MOR.address as Address,
-            abi: MOR_TOKEN_ABI,
-            client: {
-                public: this.publicClient,
-                wallet: this.walletClient,
-            }
-        });
+        return config.tokens.MOR.address as Address;
     }
 
     /**
      * Get MOR token balance for an address
      */
     async getMORBalance(address: Address): Promise<bigint> {
-        const morToken = this.getMORTokenContract();
-        return await morToken.read.balanceOf([address]) as bigint;
+        const result = await this.publicClient.readContract({
+            address: this.getMORTokenAddress(),
+            abi: MOR_TOKEN_ABI,
+            functionName: 'balanceOf',
+            args: [address]
+        });
+        return result as bigint;
     }
 
     /**
      * Check MOR token allowance for Distribution contract
      */
     async checkMORAllowance(userAddress: Address): Promise<bigint> {
-        const morToken = this.getMORTokenContract();
-        const config = this.getNetworkConfig();
-        
-        if (!config?.contracts.distribution) {
-            throw new Error('Distribution contract not configured');
-        }
-
-        return await morToken.read.allowance([
-            userAddress, 
-            config.contracts.distribution as Address
-        ]) as bigint;
+        const result = await this.publicClient.readContract({
+            address: this.getMORTokenAddress(),
+            abi: MOR_TOKEN_ABI,
+            functionName: 'allowance',
+            args: [userAddress, this.getDistributionContractAddress()] as any
+        });
+        return result as bigint;
     }
 
     /**
@@ -168,20 +147,13 @@ export class MorpheusStakingService {
             throw new Error('Wallet client required for transactions');
         }
 
-        const morToken = this.getMORTokenContract();
-        const config = this.getNetworkConfig();
-        
-        if (!config?.contracts.distribution) {
-            throw new Error('Distribution contract not configured');
-        }
-
         const txHash = await this.walletClient.writeContract({
-            address: config.tokens.MOR.address as Address,
+            address: this.getMORTokenAddress(),
             abi: MOR_TOKEN_ABI,
             functionName: 'approve',
-            args: [config.contracts.distribution as Address, amount],
-            chain: null,
-            account: this.walletClient.account || null
+            args: [this.getDistributionContractAddress(), amount] as any,
+            chain: undefined,
+            account: this.walletClient.account!
         });
         
         return txHash;
@@ -202,18 +174,13 @@ export class MorpheusStakingService {
             throw new Error('Wallet client required for transactions');
         }
 
-        const config = this.getNetworkConfig();
-        if (!config?.contracts.distribution) {
-            throw new Error('Distribution contract not configured');
-        }
-        
         const txHash = await this.walletClient.writeContract({
-            address: config.contracts.distribution as Address,
+            address: this.getDistributionContractAddress(),
             abi: DISTRIBUTION_ABI,
             functionName: 'stake',
-            args: [BigInt(poolId), amount],
-            chain: null,
-            account: this.walletClient.account || null
+            args: [BigInt(poolId), amount] as any,
+            chain: undefined,
+            account: this.walletClient.account!
         });
         
         return txHash;
@@ -223,43 +190,77 @@ export class MorpheusStakingService {
      * Get user's stake info for a Distribution pool
      */
     async getDistributionStakeInfo(poolId: number, userAddress: Address): Promise<StakeInfo> {
-        const distribution = this.getDistributionContract();
-        
-        // TODO: Re-enable when Distribution ABI has proper user data methods
-        const pendingRewards = await distribution.read.getCurrentUserReward([BigInt(poolId), userAddress]);
-        
-        return {
-            amount: 0n, // TODO: Get from actual contract
-            lockEndTime: 0n, // TODO: Get from actual contract
-            isLocked: false, // TODO: Calculate from lock end time
-            pendingRewards: pendingRewards,
-            poolId: poolId
-        };
+        try {
+            const pendingRewards = await this.publicClient.readContract({
+                address: this.getDistributionContractAddress(),
+                abi: DISTRIBUTION_ABI,
+                functionName: 'getCurrentUserReward',
+                args: [BigInt(poolId), userAddress] as any
+            });
+            
+            return {
+                amount: 0n, // TODO: Get from actual contract when user data methods are available
+                lockEndTime: 0n, // TODO: Get from actual contract when user data methods are available
+                isLocked: false, // TODO: Calculate from lock end time
+                pendingRewards: pendingRewards as bigint,
+                poolId: poolId
+            };
+        } catch (error) {
+            console.error('Error fetching distribution stake info:', error);
+            return {
+                amount: 0n,
+                lockEndTime: 0n,
+                isLocked: false,
+                pendingRewards: 0n,
+                poolId: poolId
+            };
+        }
     }
 
     /**
      * Get Distribution pool information
      */
     async getDistributionPoolInfo(poolId: number): Promise<PoolInfo> {
-        const distribution = this.getDistributionContract();
-        
-        // TODO: Re-enable when Distribution ABI has proper pool data methods
-        // const pool = await distribution.read.getPool([BigInt(poolId)]);
-        
-        return {
-            id: poolId.toString(),
-            name: `Pool ${poolId}`,
-            totalDeposited: 0n, // TODO: Get from actual contract
-            totalVirtualDeposited: 0n, // TODO: Get from actual contract
-            payoutStart: 0n,
-            decreaseInterval: 0n,
-            withdrawLockPeriod: 0n,
-            claimLockPeriod: 0n,
-            initialReward: 0n,
-            rewardDecrease: 0n,
-            minimalStake: 0n,
-            isPublic: true
-        };
+        try {
+            // TODO: Re-enable when Distribution ABI has proper pool data methods
+            // const pool = await this.publicClient.readContract({
+            //     address: this.getDistributionContractAddress(),
+            //     abi: DISTRIBUTION_ABI,
+            //     functionName: 'getPool',
+            //     args: [BigInt(poolId)]
+            // });
+            
+            return {
+                id: poolId.toString(),
+                name: `Pool ${poolId}`,
+                totalDeposited: 0n, // TODO: Get from actual contract
+                totalVirtualDeposited: 0n, // TODO: Get from actual contract
+                payoutStart: 0n,
+                decreaseInterval: 0n,
+                withdrawLockPeriod: 0n,
+                claimLockPeriod: 0n,
+                initialReward: 0n,
+                rewardDecrease: 0n,
+                minimalStake: 0n,
+                isPublic: true
+            };
+        } catch (error) {
+            console.error('Error fetching distribution pool info:', error);
+            return {
+                id: poolId.toString(),
+                name: `Pool ${poolId}`,
+                totalDeposited: 0n,
+                totalVirtualDeposited: 0n,
+                payoutStart: 0n,
+                decreaseInterval: 0n,
+                withdrawLockPeriod: 0n,
+                claimLockPeriod: 0n,
+                initialReward: 0n,
+                rewardDecrease: 0n,
+                minimalStake: 0n,
+                isPublic: true
+            };
+        }
     }
 
     /**
@@ -269,21 +270,14 @@ export class MorpheusStakingService {
         if (!this.walletClient) {
             throw new Error('Wallet client required for transactions');
         }
-
-        const distribution = this.getDistributionContract();
-        
-        const config = this.getNetworkConfig();
-        if (!config?.contracts.distribution) {
-            throw new Error('Distribution contract not configured');
-        }
         
         const txHash = await this.walletClient.writeContract({
-            address: config.contracts.distribution as Address,
+            address: this.getDistributionContractAddress(),
             abi: DISTRIBUTION_ABI,
             functionName: 'claim',
-            args: [BigInt(poolId)],
-            chain: null,
-            account: this.walletClient.account || null
+            args: [BigInt(poolId)] as any,
+            chain: undefined,
+            account: this.walletClient.account!
         });
         
         return txHash;
@@ -296,21 +290,14 @@ export class MorpheusStakingService {
         if (!this.walletClient) {
             throw new Error('Wallet client required for transactions');
         }
-
-        const distribution = this.getDistributionContract();
-        
-        const config = this.getNetworkConfig();
-        if (!config?.contracts.distribution) {
-            throw new Error('Distribution contract not configured');
-        }
         
         const txHash = await this.walletClient.writeContract({
-            address: config.contracts.distribution as Address,
+            address: this.getDistributionContractAddress(),
             abi: DISTRIBUTION_ABI,
             functionName: 'withdraw',
-            args: [BigInt(poolId), amount],
-            chain: null,
-            account: this.walletClient.account || null
+            args: [BigInt(poolId), amount] as any,
+            chain: undefined,
+            account: this.walletClient.account!
         });
         
         return txHash;
@@ -327,21 +314,14 @@ export class MorpheusStakingService {
         if (!this.walletClient) {
             throw new Error('Wallet client required for transactions');
         }
-
-        const builder = this.getBuilderContract();
-        
-        const config = this.getNetworkConfig();
-        if (!config?.contracts.builder) {
-            throw new Error('Builder contract not configured');
-        }
         
         const txHash = await this.walletClient.writeContract({
-            address: config.contracts.builder as Address,
+            address: this.getBuilderContractAddress(),
             abi: BUILDER_ABI,
-            functionName: 'createPool',
-            args: [name, initialDeposit, claimLockEnd],
-            chain: null,
-            account: this.walletClient.account || null
+            functionName: 'createPool' as any,
+            args: [name, initialDeposit, claimLockEnd] as any,
+            chain: undefined,
+            account: this.walletClient.account!
         });
         
         return txHash;
@@ -354,21 +334,14 @@ export class MorpheusStakingService {
         if (!this.walletClient) {
             throw new Error('Wallet client required for transactions');
         }
-
-        const builder = this.getBuilderContract();
-        
-        const config = this.getNetworkConfig();
-        if (!config?.contracts.builder) {
-            throw new Error('Builder contract not configured');
-        }
         
         const txHash = await this.walletClient.writeContract({
-            address: config.contracts.builder as Address,
+            address: this.getBuilderContractAddress(),
             abi: BUILDER_ABI,
-            functionName: 'deposit',
-            args: [poolId as Hash, amount],
-            chain: null,
-            account: this.walletClient.account || null
+            functionName: 'deposit' as any,
+            args: [poolId as Hash, amount] as any,
+            chain: undefined,
+            account: this.walletClient.account!
         });
         
         return txHash;
@@ -378,21 +351,33 @@ export class MorpheusStakingService {
      * Get Builder pool information
      */
     async getBuilderPoolInfo(poolId: string): Promise<BuilderPoolInfo> {
-        const builder = this.getBuilderContract();
+        const pool = await this.publicClient.readContract({
+            address: this.getBuilderContractAddress(),
+            abi: BUILDER_ABI,
+            functionName: 'builderPools' as any,
+            args: [poolId as Hash] as any
+        });
         
-        const pool = await builder.read.builderPools([poolId as Hash]);
-        const poolData = await builder.read.buildersPoolData([poolId as Hash]);
+        const poolData = await this.publicClient.readContract({
+            address: this.getBuilderContractAddress(),
+            abi: BUILDER_ABI,
+            functionName: 'buildersPoolData' as any,
+            args: [poolId as Hash] as any
+        });
+        
+        const poolArray = pool as any[];
+        const poolDataArray = poolData as any[];
         
         return {
             poolId,
-            name: pool[0],
-            admin: pool[1],
-            poolStart: pool[2],
-            withdrawLockPeriodAfterDeposit: pool[3],
-            claimLockEnd: pool[4],
-            minimalDeposit: pool[5],
-            totalDeposited: poolData[1],
-            totalVirtualDeposited: poolData[2]
+            name: poolArray[0],
+            admin: poolArray[1],
+            poolStart: poolArray[2],
+            withdrawLockPeriodAfterDeposit: poolArray[3],
+            claimLockEnd: poolArray[4],
+            minimalDeposit: poolArray[5],
+            totalDeposited: poolDataArray[1],
+            totalVirtualDeposited: poolDataArray[2]
         };
     }
 
@@ -400,16 +385,27 @@ export class MorpheusStakingService {
      * Get user's Builder pool stake info
      */
     async getBuilderStakeInfo(poolId: string, userAddress: Address): Promise<StakeInfo> {
-        const builder = this.getBuilderContract();
+        const userData = await this.publicClient.readContract({
+            address: this.getBuilderContractAddress(),
+            abi: BUILDER_ABI,
+            functionName: 'usersData' as any,
+            args: [userAddress, poolId as Hash] as any
+        });
         
-        const userData = await builder.read.usersData([userAddress, poolId as Hash]);
-        const pendingRewards = await builder.read.getCurrentUserReward([poolId as Hash, userAddress]);
+        const pendingRewards = await this.publicClient.readContract({
+            address: this.getBuilderContractAddress(),
+            abi: BUILDER_ABI,
+            functionName: 'getCurrentUserReward' as any,
+            args: [poolId as Hash, userAddress] as any
+        });
+        
+        const userDataArray = userData as any[];
         
         return {
-            amount: userData[2], // deposited
-            lockEndTime: userData[1], // claimLockStart  
-            isLocked: userData[1] > BigInt(Math.floor(Date.now() / 1000)),
-            pendingRewards: pendingRewards,
+            amount: userDataArray[2], // deposited
+            lockEndTime: userDataArray[1], // claimLockStart  
+            isLocked: userDataArray[1] > BigInt(Math.floor(Date.now() / 1000)),
+            pendingRewards: pendingRewards as bigint,
             poolId: 0 // Builder pools don't use numeric IDs
         };
     }
@@ -418,8 +414,6 @@ export class MorpheusStakingService {
      * Get all available Distribution pools
      */
     async getAvailableDistributionPools(): Promise<PoolInfo[]> {
-        const distribution = this.getDistributionContract();
-        
         // Get pool count - typically there are pools 0, 1, 2, etc.
         // For now, we'll check the first few pools
         const pools: PoolInfo[] = [];

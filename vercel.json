@@ -1,6 +1,5 @@
 {
   "installCommand": "npm ci",
-  "buildCommand": "npm run build", 
-  "devCommand": "npm run dev",
-  "nodeVersion": "18.x"
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev"
 }

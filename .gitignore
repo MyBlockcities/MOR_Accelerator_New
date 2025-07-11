@@ -107,5 +107,11 @@ all-the-ai-404521-0fe2a46c8d63.json
 # Documentation and development files
 docs/
 
+# Backup files
+*.bak
+*.backup
+*.disabled
+*.old
+
 # Exclude folders
 .anima/

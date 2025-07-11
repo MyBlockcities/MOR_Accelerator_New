@@ -104,12 +104,13 @@ mor-features-firebase-adminsdk-81kcy-690bfca883.json
 all-the-ai-404521-0fe2a46c8d63.json
 .qodo
 
-# Exclude most .md files
+# Documentation files (keep only README and requirements)
 *.md
-!/README.md
-!/MOR_Accelerator_New/README.md
-# Include specific dev-related .md files if needed
-!/MOR_Accelerator_New/docs/*.md
+!README.md
+!requirements.md
 
-# Exclude .anima folder
+# Exclude folders
+anima/
+backup/
+tests/
 .anima/
